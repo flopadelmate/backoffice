@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -22,46 +22,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateTestPlayer, useCreateRandomPlayers, generateRandomPlayerName } from "@/hooks/use-matchmaking";
-import { UserPlus, Users } from "lucide-react";
-import type { CreateTestPlayerRequest } from "@/types/api";
+import { useCreatePlayer, generateRandomPlayerName } from "@/hooks/use-matchmaking";
+import { UserPlus } from "lucide-react";
+import type { CreatePlayerRequest } from "@/types/api";
 
 const playerSchema = z.object({
-  name: z.string(),
-  level: z.number().min(0.1, "Le niveau doit être au minimum 0.1").max(9, "Le niveau doit être au maximum 9"),
-  side: z.enum(["LEFT", "RIGHT", "BOTH"]),
+  displayName: z.string(),
+  pmr: z.number().min(0.1, "Le PMR doit être entre 0.1 et 9.0").max(9.0, "Le PMR doit être entre 0.1 et 9.0").optional().refine(val => val !== undefined, "Le PMR est requis"),
+  preferredCourtPosition: z.enum(["LEFT", "RIGHT", "BOTH"]),
 });
 
 type PlayerFormData = z.infer<typeof playerSchema>;
 
 export function PlayerFactory() {
-  const [randomCount, setRandomCount] = useState(5);
-  const createPlayerMutation = useCreateTestPlayer();
-  const createRandomMutation = useCreateRandomPlayers();
+  const createPlayerMutation = useCreatePlayer();
+  const [pmrInput, setPmrInput] = useState<string>('');
 
   const form = useForm<PlayerFormData>({
     resolver: zodResolver(playerSchema),
     defaultValues: {
-      name: "",
-      level: 5,
-      side: "BOTH",
+      displayName: "",
+      pmr: undefined,
+      preferredCourtPosition: "BOTH",
     },
   });
 
   const onSubmit = (data: PlayerFormData) => {
-    const playerData = {
-      ...data,
-      name: data.name.trim() === "" ? generateRandomPlayerName() : data.name,
+    const playerData: CreatePlayerRequest = {
+      displayName: data.displayName.trim() === "" ? generateRandomPlayerName() : data.displayName,
+      pmr: data.pmr as number, // Zod garantit que pmr est défini ici grâce au refine
+      preferredCourtPosition: data.preferredCourtPosition,
     };
-    createPlayerMutation.mutate(playerData as CreateTestPlayerRequest, {
+    createPlayerMutation.mutate(playerData, {
       onSuccess: () => {
         form.reset();
+        setPmrInput('');
       },
     });
-  };
-
-  const handleCreateRandom = () => {
-    createRandomMutation.mutate(randomCount);
   };
 
   return (
@@ -72,17 +69,17 @@ export function PlayerFactory() {
           Player Factory
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent>
         <div>
           <h3 className="font-medium mb-4">Créer un joueur de test</h3>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="name"
+                name="displayName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nom</FormLabel>
+                    <FormLabel>Nom du joueur</FormLabel>
                     <FormControl>
                       <Input placeholder="Jean Dupont" {...field} />
                     </FormControl>
@@ -94,29 +91,69 @@ export function PlayerFactory() {
               <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="level"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Niveau (0.1 - 9)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={0.1}
-                          max={9}
-                          step={0.1}
-                          placeholder="5.0"
-                          {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0.1)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  name="pmr"
+                  render={({ field }) => {
+                    return (
+                      <FormItem>
+                        <FormLabel>PMR (0.1 - 9.0)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="5.0"
+                            value={pmrInput}
+                            onChange={(e) => {
+                              let value = e.target.value.replace(',', '.');
+
+                              // Mettre à jour l'affichage local immédiatement
+                              setPmrInput(value);
+
+                              // Si vide, mettre undefined dans le formulaire
+                              if (value === '') {
+                                field.onChange(undefined);
+                                return;
+                              }
+
+                              // Autoriser les états intermédiaires comme "5." ou "."
+                              if (value === '.' || value.endsWith('.')) {
+                                return; // Ne pas mettre à jour le formulaire encore
+                              }
+
+                              // Parser et valider
+                              const parsed = parseFloat(value);
+                              if (!isNaN(parsed)) {
+                                field.onChange(parsed);
+                              }
+                            }}
+                            onBlur={() => {
+                              // Au blur, nettoyer l'input
+                              const value = pmrInput.replace(',', '.');
+                              const parsed = parseFloat(value);
+
+                              if (!isNaN(parsed)) {
+                                field.onChange(parsed);
+                                setPmrInput(parsed.toString());
+                              } else if (value === '' || value === '.') {
+                                field.onChange(undefined);
+                                setPmrInput('');
+                              } else {
+                                // Input invalide, réinitialiser à la valeur du formulaire
+                                setPmrInput(field.value?.toString() ?? '');
+                              }
+
+                              field.onBlur();
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField
                   control={form.control}
-                  name="side"
+                  name="preferredCourtPosition"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Côté préféré</FormLabel>
@@ -152,34 +189,6 @@ export function PlayerFactory() {
               </Button>
             </form>
           </Form>
-        </div>
-
-        <div className="border-t pt-6">
-          <h3 className="font-medium mb-4">Génération rapide</h3>
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">
-                Nombre de joueurs
-              </label>
-              <Input
-                type="number"
-                min={1}
-                max={20}
-                value={randomCount}
-                onChange={(e) => setRandomCount(parseInt(e.target.value) || 1)}
-              />
-            </div>
-            <Button
-              onClick={handleCreateRandom}
-              disabled={createRandomMutation.isPending}
-              variant="outline"
-            >
-              <Users className="mr-2 h-4 w-4" />
-              {createRandomMutation.isPending
-                ? "Création..."
-                : "Créer N joueurs random"}
-            </Button>
-          </div>
         </div>
       </CardContent>
     </Card>

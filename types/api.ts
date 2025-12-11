@@ -3,10 +3,16 @@
 // ============================================================================
 
 export interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
 }
 
+// Response from /backoffice/login endpoint
+export interface BackofficeLoginResponse {
+  jwt: string;
+}
+
+// Internal type for auth state management
 export interface LoginResponse {
   accessToken: string;
   user: AdminUser;
@@ -18,6 +24,14 @@ export interface AdminUser {
   name: string;
   role: "ADMIN";
 }
+
+// Hardcoded admin user (single backoffice account)
+export const HARDCODED_ADMIN_USER: AdminUser = {
+  id: "admin",
+  email: "admin@padelmate.com",
+  name: "Admin",
+  role: "ADMIN",
+};
 
 // ============================================================================
 // Common Types
@@ -73,6 +87,30 @@ export interface KPIMetrics {
 }
 
 // ============================================================================
+// Player Types (Backend)
+// ============================================================================
+
+export interface ClubSimpleDto {
+  publicId: string;
+  name: string;
+  city: string;
+}
+
+export interface Player {
+  publicId: string;
+  displayName: string;
+  pmr: number; // Player Match Rating: 0.1-9.0
+  preferredCourtPosition: "LEFT" | "RIGHT" | "BOTH" | null;
+  favoriteClubs?: ClubSimpleDto[];
+}
+
+export interface CreatePlayerRequest {
+  displayName: string;
+  pmr: number;
+  preferredCourtPosition: "LEFT" | "RIGHT" | "BOTH";
+}
+
+// ============================================================================
 // Matchmaking Lab Types
 // ============================================================================
 
@@ -83,7 +121,7 @@ export interface TestPlayer {
   name: string;
   level: number;
   side: PlayerSide;
-  availability: string[]; // time slots
+  tolerance: number | null; // Level tolerance: 0.25, 0.5, 1, 2, or null (all)
   isEnqueued: boolean;
 }
 
@@ -91,7 +129,7 @@ export interface CreateTestPlayerRequest {
   name: string;
   level: number;
   side: PlayerSide;
-  availability?: string[];
+  tolerance?: number | null;
 }
 
 export interface MatchmakingRunRequest {
