@@ -5,6 +5,7 @@ import type {
   CreateTestPlayerRequest,
   MatchmakingRun,
   MatchmakingLog,
+  MatchmakingRunRequest,
 } from "@/types/api";
 
 // Mock data for development - stored in module scope to persist during session
@@ -151,11 +152,13 @@ export function useRunMatchmaking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (playerIds: string[]) => {
-      // TODO: Remplacer par apiClient.runMatchmaking({ playerIds })
+    mutationFn: async (request: MatchmakingRunRequest) => {
+      // TODO: Remplacer par apiClient.runMatchmaking(request)
       // For now, simulate API call
 
       await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const { playerIds, scheduledTime } = request;
 
       // Create mock run
       const runId = `run-${Date.now()}`;
@@ -177,7 +180,9 @@ export function useRunMatchmaking() {
         {
           timestamp: new Date(Date.now() - 2000).toISOString(),
           level: "INFO",
-          message: `Démarrage du matchmaking avec ${playerIds.length} joueurs`,
+          message: `Démarrage du matchmaking avec ${playerIds.length} joueurs${
+            scheduledTime ? ` à ${scheduledTime}` : ""
+          }`,
         },
         {
           timestamp: new Date(Date.now() - 1500).toISOString(),

@@ -96,6 +96,7 @@ export interface CreateTestPlayerRequest {
 
 export interface MatchmakingRunRequest {
   playerIds: string[];
+  scheduledTime?: string;
 }
 
 export interface MatchmakingRun {

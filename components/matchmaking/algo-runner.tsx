@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   useTestPlayers,
   useRunMatchmaking,
@@ -10,8 +12,16 @@ import {
 } from "@/hooks/use-matchmaking";
 import { Play, AlertCircle, CheckCircle, Clock, Info } from "lucide-react";
 
+function getCurrentTime(): string {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
 export function AlgoRunner() {
   const [lastRunId, setLastRunId] = useState<string | null>(null);
+  const [scheduledTime, setScheduledTime] = useState<string>(getCurrentTime());
   const { data: players } = useTestPlayers();
   const runMutation = useRunMatchmaking();
   const { data: logs, isLoading: logsLoading } = useMatchmakingLogs(lastRunId);
@@ -26,11 +36,14 @@ export function AlgoRunner() {
       return;
     }
 
-    runMutation.mutate(playerIds, {
-      onSuccess: (run) => {
-        setLastRunId(run.id);
-      },
-    });
+    runMutation.mutate(
+      { playerIds, scheduledTime },
+      {
+        onSuccess: (run) => {
+          setLastRunId(run.id);
+        },
+      }
+    );
   };
 
   const getLogIcon = (level: string) => {
@@ -64,23 +77,37 @@ export function AlgoRunner() {
               Prêt à lancer le matchmaking
             </p>
           </div>
-          <Button
-            onClick={handleRun}
-            disabled={runMutation.isPending || enqueuedPlayers.length === 0}
-            size="lg"
-          >
-            {runMutation.isPending ? (
-              <>
-                <Clock className="mr-2 h-4 w-4 animate-spin" />
-                En cours...
-              </>
-            ) : (
-              <>
-                <Play className="mr-2 h-4 w-4" />
-                Lancer le matchmaking
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Label htmlFor="scheduled-time" className="text-sm font-medium">
+                Heure :
+              </Label>
+              <Input
+                id="scheduled-time"
+                type="time"
+                value={scheduledTime}
+                onChange={(e) => setScheduledTime(e.target.value)}
+                className="w-32"
+              />
+            </div>
+            <Button
+              onClick={handleRun}
+              disabled={runMutation.isPending || enqueuedPlayers.length === 0}
+              size="lg"
+            >
+              {runMutation.isPending ? (
+                <>
+                  <Clock className="mr-2 h-4 w-4 animate-spin" />
+                  En cours...
+                </>
+              ) : (
+                <>
+                  <Play className="mr-2 h-4 w-4" />
+                  Lancer le matchmaking
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {runMutation.isError && (
