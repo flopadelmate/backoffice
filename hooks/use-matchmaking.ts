@@ -1,6 +1,9 @@
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import type {
+  Player,
+  CreatePlayerRequest,
   TestPlayer,
   CreateTestPlayerRequest,
   MatchmakingRun,
@@ -8,22 +11,66 @@ import type {
   MatchmakingRunRequest,
 } from "@/types/api";
 
-// Mock data for development - stored in module scope to persist during session
-let MOCK_TEST_PLAYERS: TestPlayer[] = [];
+// Type enrichi : Player backend + état UI local
+export interface PlayerWithUIState extends Player {
+  tolerance: number | null;
+  isEnqueued: boolean;
+  teamComposition?: [string | null, string | null, string | null];
+}
+
+// Stockage UI local (ne persiste pas au backend)
+const PLAYER_TOLERANCE = new Map<string, number | null>(); // publicId → tolerance
+const PLAYER_ENQUEUED = new Set<string>();                  // publicId si enqueued
+let PLAYER_TEAM_COMPOSITION: Record<string, [string | null, string | null, string | null]> = {}; // publicId → 3 coéquipiers (slots 2-4)
 let MOCK_RUNS: MatchmakingRun[] = [];
 let MOCK_LOGS: Record<string, MatchmakingLog[]> = {};
+let MOCK_PLAYER_AVAILABILITY: Record<string, { start: string; end: string }> = {};
 
-// Helper to generate mock player
-function generateMockPlayer(
-  data: CreateTestPlayerRequest
-): TestPlayer {
+// Helper to round date to next 30-minute slot
+function roundToNext30Min(date: Date): Date {
+  const result = new Date(date);
+  const minutes = result.getMinutes();
+  result.setSeconds(0, 0);
+
+  if (minutes === 0 || minutes === 30) {
+    return result;
+  }
+
+  if (minutes < 30) {
+    result.setMinutes(30);
+  } else {
+    result.setHours(result.getHours() + 1, 0, 0, 0);
+  }
+
+  return result;
+}
+
+// Helper to generate default availability (start: now + 2h, end: now + 10h)
+export function generateDefaultAvailability(): {
+  start: string;
+  end: string;
+} {
+  const now = new Date();
+
+  // Start: now + 2h, rounded to next 30min slot
+  const startDate = roundToNext30Min(new Date(now.getTime() + 2 * 60 * 60 * 1000));
+
+  // End: now + 10h, rounded to next 30min slot
+  const endDate = roundToNext30Min(new Date(now.getTime() + 10 * 60 * 60 * 1000));
+
+  // Format as ISO local (without Z)
+  const formatISOLocal = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}:00`;
+  };
+
   return {
-    id: `player-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-    name: data.name,
-    level: data.level,
-    side: data.side,
-    availability: data.availability || ["09:00-12:00", "14:00-18:00"],
-    isEnqueued: false,
+    start: formatISOLocal(startDate),
+    end: formatISOLocal(endDate),
   };
 }
 
@@ -40,112 +87,247 @@ export function generateRandomPlayerName(): string {
   return `${firstName} ${lastName}.`;
 }
 
-// Helper to generate N random players
-function generateRandomPlayers(count: number): TestPlayer[] {
-  const sides = ["LEFT", "RIGHT", "BOTH"] as const;
+// Helper to clean a player from all team compositions
+function cleanPlayerFromCompositions(playerId: string) {
+  // 1. Vider sa propre composition
+  delete PLAYER_TEAM_COMPOSITION[playerId];
 
-  return Array.from({ length: count }, () => {
-    // Generate random level between 0.1 and 9.0 with 1 decimal
-    const randomLevel = Math.round((Math.random() * 8.9 + 0.1) * 10) / 10;
-
-    return generateMockPlayer({
-      name: generateRandomPlayerName(),
-      level: randomLevel,
-      side: sides[Math.floor(Math.random() * sides.length)],
-    });
+  // 2. Le retirer de toutes les autres compositions
+  Object.keys(PLAYER_TEAM_COMPOSITION).forEach((key) => {
+    const composition = PLAYER_TEAM_COMPOSITION[key];
+    const updated = composition.map(id => id === playerId ? null : id) as [string | null, string | null, string | null];
+    PLAYER_TEAM_COMPOSITION[key] = updated;
   });
 }
 
-export function useTestPlayers() {
-  return useQuery({
-    queryKey: ["test-players"],
-    queryFn: async () => {
-      // TODO: Remplacer par apiClient.getTestPlayers()
-      // For now, use mock data
+// Helper pur : retourne le Set des joueurs utilisés dans au moins une compo
+function getPlayersInCompositions(
+  compositionByPlayerId: Record<string, [string | null, string | null, string | null]>
+): Set<string> {
+  const used = new Set<string>();
 
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      return MOCK_TEST_PLAYERS;
+  Object.entries(compositionByPlayerId).forEach(([ownerId, composition]) => {
+    // Si le owner a au moins un coéquipier, il est "bloqué"
+    if (composition.some((id) => id !== null)) {
+      used.add(ownerId);
+    }
+
+    // Tous les coéquipiers sont marqués aussi
+    composition.forEach((playerId) => {
+      if (playerId) {
+        used.add(playerId);
+      }
+    });
+  });
+
+  return used;
+}
+
+export function usePlayers() {
+  return useQuery({
+    queryKey: ["players"],
+    queryFn: async () => {
+      // Appeler le vrai backend
+      const backendPlayers = await apiClient.getPlayers();
+
+      // Enrichir avec l'état UI local
+      return backendPlayers.map((player): PlayerWithUIState => {
+        // Gérer tolerance : distinguer "pas d'entrée" (défaut 0.5) et "entrée = null" (garder null)
+        const tolerance = PLAYER_TOLERANCE.has(player.publicId)
+          ? PLAYER_TOLERANCE.get(player.publicId) ?? null
+          : 0.5;
+
+        return {
+          ...player,
+          tolerance,
+          isEnqueued: PLAYER_ENQUEUED.has(player.publicId),
+          teamComposition: PLAYER_TEAM_COMPOSITION[player.publicId],
+        };
+      });
     },
   });
 }
 
-export function useCreateTestPlayer() {
+// DEPRECATED: Alias pour compatibilité temporaire
+export const useTestPlayers = usePlayers;
+
+export function useCreatePlayer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateTestPlayerRequest) => {
-      // TODO: Remplacer par apiClient.createTestPlayer(data)
-      // For now, simulate API call
+    mutationFn: async (data: CreatePlayerRequest) => {
+      const newPlayer = await apiClient.createPlayer(data);
 
-      await new Promise((resolve) => setTimeout(resolve, 300));
+      // Initialiser l'état UI local pour ce nouveau joueur
+      PLAYER_TOLERANCE.set(newPlayer.publicId, 0.5);
 
-      const newPlayer = generateMockPlayer(data);
-      MOCK_TEST_PLAYERS.push(newPlayer);
       return newPlayer;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["test-players"] });
+      queryClient.invalidateQueries({ queryKey: ["players"] });
     },
   });
 }
 
-export function useCreateRandomPlayers() {
+// DEPRECATED: Alias temporaire
+export const useCreateTestPlayer = useCreatePlayer;
+
+export function useDeletePlayer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (count: number) => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    mutationFn: async (publicId: string) => {
+      await apiClient.deletePlayer(publicId);
 
-      const newPlayers = generateRandomPlayers(count);
-      MOCK_TEST_PLAYERS.push(...newPlayers);
-      return newPlayers;
+      // Nettoyer l'état UI local
+      PLAYER_TOLERANCE.delete(publicId);
+      PLAYER_ENQUEUED.delete(publicId);
+      delete MOCK_PLAYER_AVAILABILITY[publicId];
+      cleanPlayerFromCompositions(publicId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["test-players"] });
+      queryClient.invalidateQueries({ queryKey: ["players"] });
     },
   });
 }
 
-export function useDeleteTestPlayer() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (playerId: string) => {
-      // TODO: Remplacer par apiClient.deleteTestPlayer(playerId)
-      // For now, simulate API call
-
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      const index = MOCK_TEST_PLAYERS.findIndex((p) => p.id === playerId);
-      if (index !== -1) {
-        MOCK_TEST_PLAYERS.splice(index, 1);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["test-players"] });
-    },
-  });
-}
+// DEPRECATED: Alias temporaire
+export const useDeleteTestPlayer = useDeletePlayer;
 
 export function useEnqueuePlayer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (playerId: string) => {
-      // TODO: Remplacer par apiClient.enqueuePlayer(playerId)
-      // For now, simulate API call
-
+    mutationFn: async ({ playerId, enqueued }: { playerId: string; enqueued: boolean }) => {
+      // Phase 1: pur état UI local (pas encore de POST /backoffice/matchmaking/queue)
       await new Promise((resolve) => setTimeout(resolve, 200));
 
-      const player = MOCK_TEST_PLAYERS.find((p) => p.id === playerId);
-      if (player) {
-        player.isEnqueued = true;
+      if (enqueued) {
+        PLAYER_ENQUEUED.add(playerId);
+      } else {
+        PLAYER_ENQUEUED.delete(playerId);
+        // Nettoyer les compositions quand le joueur quitte la file
+        cleanPlayerFromCompositions(playerId);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["test-players"] });
+      queryClient.invalidateQueries({ queryKey: ["players"] });
     },
   });
+}
+
+export function useUpdatePlayerTolerance() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      playerId,
+      tolerance,
+    }: {
+      playerId: string;
+      tolerance: number | null;
+    }) => {
+      // Phase 1: pur état UI local
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      PLAYER_TOLERANCE.set(playerId, tolerance);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["players"] });
+    },
+  });
+}
+
+export function usePlayerAvailability(players: PlayerWithUIState[] | undefined) {
+  const [availabilityByPlayerId, setAvailabilityByPlayerId] = useState<
+    Record<string, { start: string; end: string }>
+  >({});
+
+  // Synchroniser depuis MOCK_PLAYER_AVAILABILITY au mount et quand players change
+  useEffect(() => {
+    if (!players) return;
+
+    const defaults = generateDefaultAvailability();
+    const next = { ...MOCK_PLAYER_AVAILABILITY };
+
+    // Initialiser les nouveaux joueurs avec les defaults
+    players.forEach((player) => {
+      if (!next[player.publicId]) {
+        next[player.publicId] = { start: defaults.start, end: defaults.end };
+      }
+    });
+
+    MOCK_PLAYER_AVAILABILITY = next;
+    setAvailabilityByPlayerId(next);
+  }, [players]);
+
+  // Setter qui écrit dans les deux : module scope + state React
+  const setAvailabilityForPlayer = (
+    playerId: string,
+    availability: { start: string; end: string }
+  ) => {
+    MOCK_PLAYER_AVAILABILITY[playerId] = availability;
+    setAvailabilityByPlayerId((prev) => ({
+      ...prev,
+      [playerId]: availability,
+    }));
+  };
+
+  return [availabilityByPlayerId, setAvailabilityForPlayer] as const;
+}
+
+export function usePlayerTeamComposition(players: PlayerWithUIState[] | undefined) {
+  const [compositionByPlayerId, setCompositionByPlayerId] = useState<
+    Record<string, [string | null, string | null, string | null]>
+  >({});
+
+  // Synchroniser depuis PLAYER_TEAM_COMPOSITION au mount et quand players change
+  useEffect(() => {
+    if (!players) return;
+
+    // Simplement synchroniser ce qui existe, sans initialisation automatique
+    setCompositionByPlayerId({ ...PLAYER_TEAM_COMPOSITION });
+  }, [players]);
+
+  // Setter qui écrit dans les deux : module scope + state React
+  const setCompositionForPlayer = (
+    playerId: string,
+    composition: [string | null, string | null, string | null]
+  ) => {
+    // Si tous les slots sont vides, supprimer l'entrée
+    if (composition.every((id) => id === null)) {
+      delete PLAYER_TEAM_COMPOSITION[playerId];
+      setCompositionByPlayerId((prev) => {
+        const next = { ...prev };
+        delete next[playerId];
+        return next;
+      });
+    } else {
+      // Sinon, on garde la composition
+      PLAYER_TEAM_COMPOSITION[playerId] = composition;
+      setCompositionByPlayerId((prev) => ({
+        ...prev,
+        [playerId]: composition,
+      }));
+    }
+  };
+
+  return [compositionByPlayerId, setCompositionForPlayer] as const;
+}
+
+export function usePlayersInCompositions(
+  compositionByPlayerId: Record<string, [string | null, string | null, string | null]>
+): Record<string, boolean> {
+  return useMemo(() => {
+    const result: Record<string, boolean> = {};
+    const usedPlayers = getPlayersInCompositions(compositionByPlayerId);
+
+    usedPlayers.forEach((playerId) => {
+      result[playerId] = true;
+    });
+
+    return result;
+  }, [compositionByPlayerId]);
 }
 
 export function useRunMatchmaking() {

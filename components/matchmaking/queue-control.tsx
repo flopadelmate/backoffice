@@ -10,22 +10,56 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useTestPlayers, useEnqueuePlayer } from "@/hooks/use-matchmaking";
-import { ListTodo, PlayCircle } from "lucide-react";
-import type { PlayerSide } from "@/types/api";
+import { usePlayers, useEnqueuePlayer, useUpdatePlayerTolerance, usePlayerAvailability, usePlayerTeamComposition, usePlayersInCompositions } from "@/hooks/use-matchmaking";
+import { ListTodo, PlayCircle, X } from "lucide-react";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState, useMemo } from "react";
+import { TeamCompositionWidget } from "./team-composition-widget";
 
-const sideLabels: Record<PlayerSide, string> = {
+const sideLabels: Record<"LEFT" | "RIGHT" | "BOTH", string> = {
   LEFT: "Gauche",
   RIGHT: "Droite",
   BOTH: "Les deux",
 };
 
 export function QueueControl() {
-  const { data: players, isLoading } = useTestPlayers();
+  const { data: players, isLoading } = usePlayers();
   const enqueueMutation = useEnqueuePlayer();
+  const toleranceMutation = useUpdatePlayerTolerance();
+  const [hoveredButtonId, setHoveredButtonId] = useState<string | null>(null);
+  const [availabilityByPlayerId, setAvailabilityForPlayer] = usePlayerAvailability(players);
+  const [compositionByPlayerId, setCompositionForPlayer] = usePlayerTeamComposition(players);
+  const playersInCompositions = usePlayersInCompositions(compositionByPlayerId);
+
+  // Liste des IDs des joueurs enqueued
+  const enqueuedPlayerIds = useMemo(() => {
+    return players?.filter((p) => p.isEnqueued).map((p) => p.publicId) || [];
+  }, [players]);
 
   const handleEnqueue = (playerId: string) => {
-    enqueueMutation.mutate(playerId);
+    enqueueMutation.mutate({ playerId, enqueued: true });
+  };
+
+  const handleDequeue = (playerId: string) => {
+    enqueueMutation.mutate({ playerId, enqueued: false });
+  };
+
+  const handleAvailabilityChange = (
+    playerId: string,
+    field: "start" | "end",
+    value: string
+  ) => {
+    const current = availabilityByPlayerId[playerId]!;
+    const newStart = field === "start" ? value : current.start;
+    const newEnd = field === "end" ? value : current.end;
+
+    setAvailabilityForPlayer(playerId, { start: newStart, end: newEnd });
+  };
+
+  const handleToleranceChange = (playerId: string, value: string) => {
+    const tolerance = value === "null" ? null : parseFloat(value);
+    toleranceMutation.mutate({ playerId, tolerance });
   };
 
   return (
@@ -65,45 +99,141 @@ export function QueueControl() {
                     <TableHead>Nom</TableHead>
                     <TableHead>Niveau</TableHead>
                     <TableHead>Côté</TableHead>
+                    <TableHead>Tolérance</TableHead>
+                    <TableHead>Groupe</TableHead>
+                    <TableHead>Dispos</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {players.map((player) => (
-                    <TableRow key={player.id}>
-                      <TableCell className="font-medium">
-                        {player.name}
-                      </TableCell>
-                      <TableCell>{player.level}</TableCell>
-                      <TableCell>{sideLabels[player.side]}</TableCell>
-                      <TableCell>
-                        {player.isEnqueued ? (
-                          <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                            En file
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
-                            Hors file
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant={player.isEnqueued ? "outline" : "default"}
-                          onClick={() => handleEnqueue(player.id)}
-                          disabled={
-                            player.isEnqueued ||
-                            enqueueMutation.isPending
-                          }
-                        >
-                          <PlayCircle className="h-4 w-4 mr-2" />
-                          {player.isEnqueued ? "En file" : "Inscrire"}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {players.map((player) => {
+                    const availability = availabilityByPlayerId[player.publicId];
+                    const minStartDate = new Date(Date.now() + 2 * 60 * 60 * 1000); // now + 2h
+                    const minEndDate = availability?.start
+                      ? new Date(new Date(availability.start).getTime() + 90 * 60 * 1000)
+                      : minStartDate;
+
+                    const sideLabel = player.preferredCourtPosition === null
+                      ? "Aucune"
+                      : sideLabels[player.preferredCourtPosition];
+
+                    // Déterminer les états du joueur
+                    const playerComposition = compositionByPlayerId[player.publicId];
+                    const isOwner = !!playerComposition && playerComposition.some((id) => id !== null);
+                    const isInAnyComposition = !!playersInCompositions[player.publicId];
+
+                    // Le joueur est coéquipier uniquement s'il est dans une compo mais n'est pas owner
+                    const isCoTeammateOnly = isInAnyComposition && !isOwner;
+
+                    // Peut éditer le widget si :
+                    // - pas dans une compo (peut en créer une)
+                    // - OU est owner (peut éditer la sienne)
+                    const canEditGroup = !isInAnyComposition || isOwner;
+
+                    return (
+                      <TableRow
+                        key={player.publicId}
+                        className={isCoTeammateOnly ? "opacity-50 bg-gray-50" : ""}
+                      >
+                        <TableCell className="font-medium">
+                          {player.displayName}
+                        </TableCell>
+                        <TableCell>{player.pmr.toFixed(1)}</TableCell>
+                        <TableCell>{sideLabel}</TableCell>
+                        <TableCell>
+                          <Select
+                            value={player.tolerance === null ? "null" : player.tolerance.toString()}
+                            onValueChange={(value) => handleToleranceChange(player.publicId, value)}
+                            disabled={toleranceMutation.isPending}
+                          >
+                            <SelectTrigger className="w-[120px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="0.25">± 0.25</SelectItem>
+                              <SelectItem value="0.5">± 0.5</SelectItem>
+                              <SelectItem value="1">± 1</SelectItem>
+                              <SelectItem value="2">± 2</SelectItem>
+                              <SelectItem value="null">Tout</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <TeamCompositionWidget
+                            currentPlayer={player}
+                            teamComposition={compositionByPlayerId[player.publicId] || [null, null, null]}
+                            allPlayers={players}
+                            enqueuedPlayerIds={enqueuedPlayerIds}
+                            playersInCompositions={playersInCompositions}
+                            canEditGroup={canEditGroup}
+                            onUpdate={(composition) =>
+                              setCompositionForPlayer(player.publicId, composition)
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <DateTimePicker
+                              value={availability?.start || null}
+                              onChange={(value) =>
+                                handleAvailabilityChange(player.publicId, "start", value)
+                              }
+                              minDate={minStartDate}
+                              label="Début"
+                            />
+                            <DateTimePicker
+                              value={availability?.end || null}
+                              onChange={(value) =>
+                                handleAvailabilityChange(player.publicId, "end", value)
+                              }
+                              minDate={minEndDate}
+                              label="Fin"
+                              disabled={!availability?.start}
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {player.isEnqueued ? (
+                            <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                              En file
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+                              Hors file
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            variant={
+                              player.isEnqueued && hoveredButtonId === player.publicId
+                                ? "destructive"
+                                : player.isEnqueued
+                                ? "outline"
+                                : "default"
+                            }
+                            onClick={() =>
+                              player.isEnqueued
+                                ? handleDequeue(player.publicId)
+                                : handleEnqueue(player.publicId)
+                            }
+                            onMouseEnter={() => setHoveredButtonId(player.publicId)}
+                            onMouseLeave={() => setHoveredButtonId(null)}
+                            disabled={enqueueMutation.isPending || isCoTeammateOnly}
+                          >
+                            {player.isEnqueued && hoveredButtonId === player.publicId ? (
+                              <X className="h-4 w-4 mr-2" />
+                            ) : (
+                              <PlayCircle className="h-4 w-4 mr-2" />
+                            )}
+                            {player.isEnqueued ? "En file" : "Inscrire"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
