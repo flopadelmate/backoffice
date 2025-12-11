@@ -10,22 +10,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { useTestPlayers, useDeleteTestPlayer } from "@/hooks/use-matchmaking";
+import { usePlayers, useDeletePlayer } from "@/hooks/use-matchmaking";
 import { Database, Trash2 } from "lucide-react";
-import type { PlayerSide } from "@/types/api";
 
-const sideLabels: Record<PlayerSide, string> = {
+const sideLabels: Record<"LEFT" | "RIGHT" | "BOTH", string> = {
   LEFT: "Gauche",
   RIGHT: "Droite",
   BOTH: "Les deux",
 };
 
 export function PlayerBase() {
-  const { data: players, isLoading: isLoadingPlayers } = useTestPlayers();
-  const deletePlayerMutation = useDeleteTestPlayer();
+  const { data: players, isLoading: isLoadingPlayers } = usePlayers();
+  const deletePlayerMutation = useDeletePlayer();
 
-  const handleDelete = (playerId: string) => {
-    deletePlayerMutation.mutate(playerId);
+  const handleDelete = (publicId: string) => {
+    deletePlayerMutation.mutate(publicId);
   };
 
   return (
@@ -68,26 +67,32 @@ export function PlayerBase() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {players.map((player) => (
-                    <TableRow key={player.id}>
-                      <TableCell className="font-medium">
-                        {player.name}
-                      </TableCell>
-                      <TableCell>{player.level}</TableCell>
-                      <TableCell>{sideLabels[player.side]}</TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDelete(player.id)}
-                          disabled={deletePlayerMutation.isPending}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Supprimer
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {players.map((player) => {
+                    const sideLabel = player.preferredCourtPosition === null
+                      ? "Aucune"
+                      : sideLabels[player.preferredCourtPosition];
+
+                    return (
+                      <TableRow key={player.publicId}>
+                        <TableCell className="font-medium">
+                          {player.displayName}
+                        </TableCell>
+                        <TableCell>{player.pmr.toFixed(1)}</TableCell>
+                        <TableCell>{sideLabel}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDelete(player.publicId)}
+                            disabled={deletePlayerMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Supprimer
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>

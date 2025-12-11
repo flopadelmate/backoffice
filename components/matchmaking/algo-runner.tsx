@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  useTestPlayers,
+  usePlayers,
   useRunMatchmaking,
   useMatchmakingLogs,
 } from "@/hooks/use-matchmaking";
@@ -22,14 +22,14 @@ function getCurrentTime(): string {
 export function AlgoRunner() {
   const [lastRunId, setLastRunId] = useState<string | null>(null);
   const [scheduledTime, setScheduledTime] = useState<string>(getCurrentTime());
-  const { data: players } = useTestPlayers();
+  const { data: players } = usePlayers();
   const runMutation = useRunMatchmaking();
   const { data: logs, isLoading: logsLoading } = useMatchmakingLogs(lastRunId);
 
   const enqueuedPlayers = players?.filter((p) => p.isEnqueued) || [];
 
   const handleRun = () => {
-    const playerIds = enqueuedPlayers.map((p) => p.id);
+    const playerIds = enqueuedPlayers.map((p) => p.publicId);
 
     if (playerIds.length === 0) {
       alert("Aucun joueur en file. Inscrivez d'abord des joueurs.");

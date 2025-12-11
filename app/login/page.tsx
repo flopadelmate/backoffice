@@ -25,7 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 const loginSchema = z.object({
-  email: z.string().email("Email invalide"),
+  username: z.string().min(1, "Le pseudo est requis"),
   password: z.string().min(1, "Le mot de passe est requis"),
 });
 
@@ -39,7 +39,7 @@ export default function LoginPage() {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   });
@@ -80,15 +80,15 @@ export default function LoginPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="email"
+                name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Pseudo</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="admin@padelmate.com"
-                        type="email"
-                        autoComplete="email"
+                        placeholder="admin"
+                        type="text"
+                        autoComplete="username"
                         {...field}
                       />
                     </FormControl>

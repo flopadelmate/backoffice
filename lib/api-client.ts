@@ -1,10 +1,12 @@
 import type {
   LoginRequest,
-  LoginResponse,
+  BackofficeLoginResponse,
   Club,
   ClubUpdateRequest,
   PaginatedResponse,
   KPIMetrics,
+  Player,
+  CreatePlayerRequest,
   TestPlayer,
   CreateTestPlayerRequest,
   MatchmakingRun,
@@ -12,8 +14,8 @@ import type {
   MatchmakingLog,
 } from "@/types/api";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+// Use relative path - Next.js will proxy to backend via rewrites
+const API_BASE_URL = "/api";
 
 class ApiClient {
   private token: string | null = null;
@@ -55,7 +57,7 @@ class ApiClient {
       // Handle 401 Unauthorized
       if (response.status === 401) {
         // Don't trigger unauthorized handler for login endpoint (to avoid logout loops)
-        const isLoginEndpoint = endpoint.includes("/auth/admin/login");
+        const isLoginEndpoint = endpoint.includes("/backoffice/login");
 
         if (!isLoginEndpoint && this.unauthorizedHandler) {
           // Token expired or invalid - trigger logout
@@ -98,8 +100,8 @@ class ApiClient {
   // Authentication
   // ============================================================================
 
-  async login(data: LoginRequest): Promise<LoginResponse> {
-    return this.request<LoginResponse>("/auth/admin/login", {
+  async login(data: LoginRequest): Promise<BackofficeLoginResponse> {
+    return this.request<BackofficeLoginResponse>("/backoffice/login", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -149,6 +151,27 @@ class ApiClient {
 
   async getKPIs(): Promise<KPIMetrics> {
     return this.request<KPIMetrics>("/admin/kpis");
+  }
+
+  // ============================================================================
+  // Players
+  // ============================================================================
+
+  async getPlayers(): Promise<Player[]> {
+    return this.request<Player[]>("/backoffice/players");
+  }
+
+  async createPlayer(data: CreatePlayerRequest): Promise<Player> {
+    return this.request<Player>("/backoffice/players", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deletePlayer(publicId: string): Promise<void> {
+    return this.request<void>(`/backoffice/players/${publicId}`, {
+      method: "DELETE",
+    });
   }
 
   // ============================================================================

@@ -111,11 +111,36 @@ L'authentification est gérée en mémoire pour cette V1 :
 
 ## 🔗 API Backend
 
-### Configuration
+### Configuration & Proxy CORS
+
+Le projet utilise un **proxy Next.js** pour éliminer les erreurs CORS. Le navigateur appelle uniquement `/api/*` (même origin), et Next.js redirige les requêtes vers le backend.
+
+#### Configuration de l'URL Backend
+
 Définir l'URL du backend dans `.env.local` :
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
+# URL du backend (utilisée par le proxy Next.js côté serveur)
+BACKEND_URL=https://backhand-test.up.railway.app
 ```
+
+**Environnements** :
+- **Développement local** : `http://localhost:8080` (si backend Spring Boot en local)
+- **Production** : `https://backhand-test.up.railway.app` (ou votre URL de déploiement)
+
+#### Comment ça fonctionne ?
+
+1. **Frontend** appelle `/api/backoffice/login` (chemin relatif, pas d'URL absolue)
+2. **Next.js rewrites** (configuré dans `next.config.ts`) proxyifie vers `${BACKEND_URL}/backoffice/login`
+3. **Navigateur** ne voit qu'une seule origin → **Pas de CORS** ✅
+
+**Exemple de flux** :
+```
+Navigateur → http://localhost:3000/api/backoffice/login
+    ↓ (Next.js proxy)
+Backend  → https://backhand-test.up.railway.app/backoffice/login
+```
+
+Le navigateur ne sait pas que le backend est sur un domaine différent. Tout passe par le même origin.
 
 ### Endpoints Attendus
 
@@ -171,8 +196,10 @@ npm run build
 
 1. Connecter le repository GitHub à Vercel
 2. Configurer les variables d'environnement :
-   - `NEXT_PUBLIC_API_URL` : URL du backend en production
+   - `BACKEND_URL` : URL du backend en production (ex: `https://backhand-test.up.railway.app`)
 3. Déployer automatiquement à chaque push
+
+**Note** : Le proxy Next.js fonctionne automatiquement en production. Le navigateur appellera toujours `/api/*` et Vercel proxifiera vers `BACKEND_URL`.
 
 ## 📝 Notes Importantes
 

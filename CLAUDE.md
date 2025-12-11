@@ -162,7 +162,15 @@ Centralized client with:
 3. Create hook in `hooks/use-my-resource.ts` using TanStack Query
 4. Use hook in components
 
-### 4. App Router Structure
+### 4. Backend API Documentation
+
+**Swagger URL**: https://backhand-test.up.railway.app/api-docs
+
+⚠️ **Important**: Ce projet utilise uniquement les endpoints `/backoffice/*` de l'API.
+
+Consultez la documentation Swagger pour voir tous les endpoints disponibles, leurs paramètres, et les modèles de données.
+
+### 5. App Router Structure
 
 ```
 app/
@@ -180,7 +188,7 @@ All routes under `admin/` share a layout that handles authentication checks.
 
 **Middleware** (`middleware.ts`): Minimal, just redirects `/` to `/login`. Real auth protection is client-side in the layout.
 
-### 5. Type Safety Strategy
+### 6. Type Safety Strategy
 
 All API types are in `types/api.ts`. The project uses:
 - TypeScript strict mode
