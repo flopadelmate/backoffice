@@ -20,6 +20,10 @@ interface AuthContextValue extends AuthState {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+// sessionStorage keys
+const TOKEN_KEY = "auth_token";
+const USER_KEY = "auth_user";
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -29,6 +33,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
   const router = useRouter();
 
+  // Restore session from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const storedToken = sessionStorage.getItem(TOKEN_KEY);
+      const storedUser = sessionStorage.getItem(USER_KEY);
+
+      if (storedToken && storedUser) {
+        // Check if token is expired
+        if (!isTokenExpired(storedToken)) {
+          const user = JSON.parse(storedUser) as AdminUser;
+
+          // Restore state
+          setState({
+            user,
+            token: storedToken,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+
+          // Configure API client
+          apiClient.setToken(storedToken);
+        } else {
+          // Token expired, clear storage
+          sessionStorage.removeItem(TOKEN_KEY);
+          sessionStorage.removeItem(USER_KEY);
+          setState((prev) => ({ ...prev, isLoading: false }));
+        }
+      } else {
+        // No stored session
+        setState((prev) => ({ ...prev, isLoading: false }));
+      }
+    } catch (error) {
+      console.error("Failed to restore session:", error);
+      setState((prev) => ({ ...prev, isLoading: false }));
+    }
+  }, []); // Run only on mount
+
   const handleLogout = useCallback(() => {
     setState({
       user: null,
@@ -36,6 +77,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: false,
       isLoading: false,
     });
+
+    // Clear sessionStorage
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(USER_KEY);
 
     // Clear token from API client
     apiClient.setToken(null);
@@ -78,6 +123,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: true,
       isLoading: false,
     });
+
+    // Save to sessionStorage
+    sessionStorage.setItem(TOKEN_KEY, token);
+    sessionStorage.setItem(USER_KEY, JSON.stringify(user));
 
     // Update API client with token
     apiClient.setToken(token);

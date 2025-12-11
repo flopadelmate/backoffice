@@ -17,7 +17,7 @@ function generateMockPlayer(
   data: CreateTestPlayerRequest
 ): TestPlayer {
   return {
-    id: `player-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: `player-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
     name: data.name,
     level: data.level,
     side: data.side,
@@ -26,21 +26,30 @@ function generateMockPlayer(
   };
 }
 
-// Helper to generate N random players
-function generateRandomPlayers(count: number): TestPlayer[] {
-  const levels = ["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"] as const;
-  const sides = ["LEFT", "RIGHT", "BOTH"] as const;
+// Exported helper to generate a random player name
+export function generateRandomPlayerName(): string {
   const names = [
     "Alice", "Bob", "Charlie", "Diana", "Ethan", "Fiona", "George", "Hannah",
     "Ivan", "Julia", "Kevin", "Luna", "Marcus", "Nina", "Oscar", "Paula",
   ];
 
-  return Array.from({ length: count }, (_, i) => {
-    const firstName = names[Math.floor(Math.random() * names.length)];
-    const lastName = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+  const firstName = names[Math.floor(Math.random() * names.length)];
+  const lastName = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+
+  return `${firstName} ${lastName}.`;
+}
+
+// Helper to generate N random players
+function generateRandomPlayers(count: number): TestPlayer[] {
+  const sides = ["LEFT", "RIGHT", "BOTH"] as const;
+
+  return Array.from({ length: count }, () => {
+    // Generate random level between 0.1 and 9.0 with 1 decimal
+    const randomLevel = Math.round((Math.random() * 8.9 + 0.1) * 10) / 10;
+
     return generateMockPlayer({
-      name: `${firstName} ${lastName}. ${i + 1}`,
-      level: levels[Math.floor(Math.random() * levels.length)],
+      name: generateRandomPlayerName(),
+      level: randomLevel,
       side: sides[Math.floor(Math.random() * sides.length)],
     });
   });
@@ -89,6 +98,27 @@ export function useCreateRandomPlayers() {
       const newPlayers = generateRandomPlayers(count);
       MOCK_TEST_PLAYERS.push(...newPlayers);
       return newPlayers;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["test-players"] });
+    },
+  });
+}
+
+export function useDeleteTestPlayer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (playerId: string) => {
+      // TODO: Remplacer par apiClient.deleteTestPlayer(playerId)
+      // For now, simulate API call
+
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      const index = MOCK_TEST_PLAYERS.findIndex((p) => p.id === playerId);
+      if (index !== -1) {
+        MOCK_TEST_PLAYERS.splice(index, 1);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["test-players"] });

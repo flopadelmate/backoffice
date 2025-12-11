@@ -23,6 +23,11 @@ export function decodeJWT(token: string): Record<string, unknown> | null {
  * Check if a JWT token is expired
  */
 export function isTokenExpired(token: string): boolean {
+  // Bypass expiration check for mock tokens (development only)
+  if (token.startsWith("mock-")) {
+    return false;
+  }
+
   const decoded = decodeJWT(token);
   if (!decoded || !decoded.exp) {
     return true;

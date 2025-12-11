@@ -22,13 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateTestPlayer, useCreateRandomPlayers } from "@/hooks/use-matchmaking";
+import { useCreateTestPlayer, useCreateRandomPlayers, generateRandomPlayerName } from "@/hooks/use-matchmaking";
 import { UserPlus, Users } from "lucide-react";
 import type { CreateTestPlayerRequest } from "@/types/api";
 
 const playerSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  level: z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"]),
+  name: z.string(),
+  level: z.number().min(0.1, "Le niveau doit être au minimum 0.1").max(9, "Le niveau doit être au maximum 9"),
   side: z.enum(["LEFT", "RIGHT", "BOTH"]),
 });
 
@@ -43,13 +43,17 @@ export function PlayerFactory() {
     resolver: zodResolver(playerSchema),
     defaultValues: {
       name: "",
-      level: "INTERMEDIATE",
+      level: 5,
       side: "BOTH",
     },
   });
 
   const onSubmit = (data: PlayerFormData) => {
-    createPlayerMutation.mutate(data as CreateTestPlayerRequest, {
+    const playerData = {
+      ...data,
+      name: data.name.trim() === "" ? generateRandomPlayerName() : data.name,
+    };
+    createPlayerMutation.mutate(playerData as CreateTestPlayerRequest, {
       onSuccess: () => {
         form.reset();
       },
@@ -93,23 +97,18 @@ export function PlayerFactory() {
                   name="level"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Niveau</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="BEGINNER">Débutant</SelectItem>
-                          <SelectItem value="INTERMEDIATE">Intermédiaire</SelectItem>
-                          <SelectItem value="ADVANCED">Avancé</SelectItem>
-                          <SelectItem value="EXPERT">Expert</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>Niveau (0.1 - 9)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0.1}
+                          max={9}
+                          step={0.1}
+                          placeholder="5.0"
+                          {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0.1)}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

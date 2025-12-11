@@ -77,12 +77,11 @@ export interface KPIMetrics {
 // ============================================================================
 
 export type PlayerSide = "LEFT" | "RIGHT" | "BOTH";
-export type PlayerLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT";
 
 export interface TestPlayer {
   id: string;
   name: string;
-  level: PlayerLevel;
+  level: number;
   side: PlayerSide;
   availability: string[]; // time slots
   isEnqueued: boolean;
@@ -90,7 +89,7 @@ export interface TestPlayer {
 
 export interface CreateTestPlayerRequest {
   name: string;
-  level: PlayerLevel;
+  level: number;
   side: PlayerSide;
   availability?: string[];
 }

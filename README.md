@@ -44,7 +44,7 @@ npm start
 ```
 backoffice/
 ├── app/                      # Next.js App Router
-│   ├── (admin)/             # Groupe de routes protégées
+│   ├── admin/               # Routes admin protégées
 │   │   ├── dashboard/       # Page d'accueil admin
 │   │   ├── clubs/           # Module Clubs
 │   │   ├── kpi/             # Module KPI

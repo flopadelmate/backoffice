@@ -8,8 +8,20 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: async (credentials: LoginRequest) => {
-      const response = await apiClient.login(credentials);
-      return response;
+      // TODO: Remplacer par apiClient.login(credentials)
+      // Mock login for development (backend not connected yet)
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
+
+      // Accept any credentials for now
+      return {
+        accessToken: "mock-jwt-token-dev-12345",
+        user: {
+          id: "admin-1",
+          email: credentials.email,
+          name: "Admin User",
+          role: "ADMIN" as const,
+        },
+      };
     },
     onSuccess: (data) => {
       login(data.accessToken, data.user);
