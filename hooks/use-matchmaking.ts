@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { useAuth } from "@/hooks/use-auth";
 import type {
   Player,
   CreatePlayerRequest,
@@ -8,23 +9,56 @@ import type {
   CreateTestPlayerRequest,
   MatchmakingRun,
   MatchmakingLog,
-  MatchmakingRunRequest,
+  MatchmakingQueueRequest,
+  MatchmakingQueueWithReservationRequest,
+  MatchmakingReport,
+  MatchmakingGroupResponseDto,
 } from "@/types/api";
+import mockReport from "@/docs/rapport_matchmaking_1.json";
 
 // Type enrichi : Player backend + état UI local
 export interface PlayerWithUIState extends Player {
   tolerance: number | null;
   isEnqueued: boolean;
+  enqueuedGroupPublicId: string | null;
   teamComposition?: [string | null, string | null, string | null];
 }
 
 // Stockage UI local (ne persiste pas au backend)
 const PLAYER_TOLERANCE = new Map<string, number | null>(); // publicId → tolerance
-const PLAYER_ENQUEUED = new Set<string>();                  // publicId si enqueued
 let PLAYER_TEAM_COMPOSITION: Record<string, [string | null, string | null, string | null]> = {}; // publicId → 3 coéquipiers (slots 2-4)
 let MOCK_RUNS: MatchmakingRun[] = [];
 let MOCK_LOGS: Record<string, MatchmakingLog[]> = {};
 let MOCK_PLAYER_AVAILABILITY: Record<string, { start: string; end: string }> = {};
+
+// Helpers pour dériver l'état de la queue depuis les données backend
+function buildEnqueuedPlayerSet(
+  queueGroups: MatchmakingGroupResponseDto[]
+): Set<string> {
+  const set = new Set<string>();
+  queueGroups.forEach((g) => {
+    g.players.forEach((p) => set.add(p.playerPublicId));
+  });
+  return set;
+}
+
+function buildPlayerToGroupMap(
+  queueGroups: MatchmakingGroupResponseDto[]
+): Map<string, string> {
+  const map = new Map<string, string>();
+  queueGroups.forEach((g) => {
+    g.players.forEach((p) => {
+      if (map.has(p.playerPublicId)) {
+        console.warn(
+          `Player ${p.playerPublicId} appears in multiple groups (status: ${g.status}). Using first occurrence.`
+        );
+        return;
+      }
+      map.set(p.playerPublicId, g.publicId);
+    });
+  });
+  return map;
+}
 
 // Helper to round date to next 30-minute slot
 function roundToNext30Min(date: Date): Date {
@@ -123,29 +157,115 @@ function getPlayersInCompositions(
   return used;
 }
 
-export function usePlayers() {
+// ============================================================================
+// Mapping front → back pour inscription matchmaking
+// ============================================================================
+
+function buildEnqueuePayload(
+  playerId: string,
+  allPlayers: Player[]
+): MatchmakingQueueRequest {
+  const player = allPlayers.find((p) => p.publicId === playerId);
+  if (!player) {
+    throw new Error(`Player ${playerId} not found`);
+  }
+
+  // 1. Clubs (depuis favoriteClubs)
+  const clubPublicIds = player.favoriteClubs?.map((c) => c.publicId) ?? [];
+  if (clubPublicIds.length === 0) {
+    throw new Error(`Player ${player.displayName} has no favorite clubs`);
+  }
+
+  // 2. Time windows (ISO 8601)
+  // ✅ CORRECTION: Fallback si availability est undefined
+  const availability = MOCK_PLAYER_AVAILABILITY[playerId] ?? generateDefaultAvailability();
+  const timeWindowStart = new Date(availability.start).toISOString();
+  const timeWindowEnd = new Date(availability.end).toISOString();
+
+  // 3. Tolérance (clamp 0.25 → 0.5, null → 10)
+  // ✅ CORRECTION: Distinguer undefined vs null
+  const toleranceRaw = PLAYER_TOLERANCE.get(playerId);
+  const tolerance = toleranceRaw === undefined ? 0.5 : toleranceRaw;
+  const teammateTol = tolerance === null ? 10 : Math.max(tolerance, 0.5);
+
+  // 4. Slots (omit si vide, pas null)
+  const composition = PLAYER_TEAM_COMPOSITION[playerId];
+  const payload: MatchmakingQueueRequest = {
+    clubPublicIds,
+    timeWindowStart,
+    timeWindowEnd,
+    slotA: { playerPublicId: playerId },
+    teammateTol,
+  };
+
+  // Si team composition définie (slots 1-3 = teammate + 2 opponents)
+  if (composition) {
+    if (composition[0]) payload.slotB = { playerPublicId: composition[0] };
+    if (composition[1]) payload.slotC = { playerPublicId: composition[1] };
+    if (composition[2]) payload.slotD = { playerPublicId: composition[2] };
+  }
+
+  return payload;
+}
+
+// Hook pour récupérer la queue matchmaking
+export function useMatchmakingQueue() {
+  const { isAuthenticated } = useAuth();
+
   return useQuery({
-    queryKey: ["players"],
-    queryFn: async () => {
-      // Appeler le vrai backend
-      const backendPlayers = await apiClient.getPlayers();
-
-      // Enrichir avec l'état UI local
-      return backendPlayers.map((player): PlayerWithUIState => {
-        // Gérer tolerance : distinguer "pas d'entrée" (défaut 0.5) et "entrée = null" (garder null)
-        const tolerance = PLAYER_TOLERANCE.has(player.publicId)
-          ? PLAYER_TOLERANCE.get(player.publicId) ?? null
-          : 0.5;
-
-        return {
-          ...player,
-          tolerance,
-          isEnqueued: PLAYER_ENQUEUED.has(player.publicId),
-          teamComposition: PLAYER_TEAM_COMPOSITION[player.publicId],
-        };
-      });
-    },
+    queryKey: ["matchmaking-queue"],
+    queryFn: () => apiClient.getMatchmakingQueue(),
+    refetchInterval: 7000, // Poll toutes les 7s
+    enabled: isAuthenticated, // Éviter de poll hors session
   });
+}
+
+// Hook pour récupérer les players avec enrichissement UI
+export function usePlayers() {
+  // Étape 1: Fetch raw backend data
+  const playersQuery = useQuery({
+    queryKey: ["players"],
+    queryFn: () => apiClient.getPlayers(),
+  });
+
+  // Étape 2: Fetch queue state
+  const { data: queueGroups } = useMatchmakingQueue();
+
+  // Étape 3: Build derived structures (mémoïsés sur queueGroups)
+  const enqueuedSet = useMemo(
+    () => (queueGroups ? buildEnqueuedPlayerSet(queueGroups) : new Set<string>()),
+    [queueGroups]
+  );
+
+  const playerToGroupMap = useMemo(
+    () => (queueGroups ? buildPlayerToGroupMap(queueGroups) : new Map<string, string>()),
+    [queueGroups]
+  );
+
+  // Étape 4: Merge UI state (mémoïsé sur playersQuery.data + structures dérivées)
+  const playersWithUI = useMemo((): PlayerWithUIState[] | undefined => {
+    if (!playersQuery.data) return undefined;
+
+    return playersQuery.data.map((player): PlayerWithUIState => {
+      const tolerance = PLAYER_TOLERANCE.has(player.publicId)
+        ? PLAYER_TOLERANCE.get(player.publicId) ?? null
+        : 0.5;
+
+      return {
+        ...player,
+        tolerance,
+        isEnqueued: enqueuedSet.has(player.publicId),
+        enqueuedGroupPublicId: playerToGroupMap.get(player.publicId) ?? null,
+        teamComposition: PLAYER_TEAM_COMPOSITION[player.publicId],
+      };
+    });
+  }, [playersQuery.data, enqueuedSet, playerToGroupMap]);
+
+  // Étape 5: Return enriched data
+  return {
+    ...playersQuery,
+    data: playersWithUI,
+  };
 }
 
 // DEPRECATED: Alias pour compatibilité temporaire
@@ -181,7 +301,6 @@ export function useDeletePlayer() {
 
       // Nettoyer l'état UI local
       PLAYER_TOLERANCE.delete(publicId);
-      PLAYER_ENQUEUED.delete(publicId);
       delete MOCK_PLAYER_AVAILABILITY[publicId];
       cleanPlayerFromCompositions(publicId);
     },
@@ -196,22 +315,95 @@ export const useDeleteTestPlayer = useDeletePlayer;
 
 export function useEnqueuePlayer() {
   const queryClient = useQueryClient();
+  const { data: players } = usePlayers();
 
   return useMutation({
-    mutationFn: async ({ playerId, enqueued }: { playerId: string; enqueued: boolean }) => {
-      // Phase 1: pur état UI local (pas encore de POST /backoffice/matchmaking/queue)
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      if (enqueued) {
-        PLAYER_ENQUEUED.add(playerId);
-      } else {
-        PLAYER_ENQUEUED.delete(playerId);
-        // Nettoyer les compositions quand le joueur quitte la file
-        cleanPlayerFromCompositions(playerId);
-      }
+    mutationFn: async ({ playerId }: { playerId: string }) => {
+      const payload = buildEnqueuePayload(playerId, players ?? []);
+      return apiClient.enqueueMatchmaking(payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["players"] });
+      // Invalider uniquement la queue (players se met à jour automatiquement)
+      queryClient.invalidateQueries({ queryKey: ["matchmaking-queue"] });
+    },
+    onError: (error) => {
+      console.error("Erreur lors de l'inscription:", error);
+    },
+  });
+}
+
+export function useDequeuePlayer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ groupPublicId }: { groupPublicId: string }) => {
+      await apiClient.dequeueMatchmaking(groupPublicId);
+    },
+    onSuccess: () => {
+      // Invalider uniquement la queue
+      queryClient.invalidateQueries({ queryKey: ["matchmaking-queue"] });
+    },
+    onError: (error) => {
+      console.error("Erreur lors de la désinscription:", error);
+    },
+  });
+}
+
+export function useEnqueueWithReservation() {
+  const queryClient = useQueryClient();
+  const { data: players } = usePlayers();
+
+  return useMutation({
+    mutationFn: async ({
+      playerId,
+      reservedClubPublicId,
+      reservedCourtId,
+      reservedStart,
+      reservedEnd,
+    }: {
+      playerId: string;
+      reservedClubPublicId: string;
+      reservedCourtId: string;
+      reservedStart: string; // ISO string
+      reservedEnd: string; // ISO string
+    }) => {
+      const player = players?.find((p) => p.publicId === playerId);
+      if (!player) {
+        throw new Error(`Player ${playerId} not found`);
+      }
+
+      // ✅ CORRECTION: Distinguer undefined vs null pour tolérance
+      const toleranceRaw = PLAYER_TOLERANCE.get(playerId);
+      const tolerance = toleranceRaw === undefined ? 0.5 : toleranceRaw;
+      const teammateTol = tolerance === null ? 10 : Math.max(tolerance, 0.5);
+
+      const composition = PLAYER_TEAM_COMPOSITION[playerId];
+
+      // ✅ DTO with-reservation : PAS de clubPublicIds ni timeWindow
+      const payload: MatchmakingQueueWithReservationRequest = {
+        reservedClubPublicId,
+        reservedCourtId,
+        reservedStart: new Date(reservedStart).toISOString(),
+        reservedEnd: new Date(reservedEnd).toISOString(),
+        slotA: { playerPublicId: playerId },
+        teammateTol,
+      };
+
+      // Ajouter slots si team composition
+      if (composition) {
+        if (composition[0]) payload.slotB = { playerPublicId: composition[0] };
+        if (composition[1]) payload.slotC = { playerPublicId: composition[1] };
+        if (composition[2]) payload.slotD = { playerPublicId: composition[2] };
+      }
+
+      return apiClient.enqueueMatchmakingWithReservation(payload);
+    },
+    onSuccess: () => {
+      // Invalider uniquement la queue
+      queryClient.invalidateQueries({ queryKey: ["matchmaking-queue"] });
+    },
+    onError: (error) => {
+      console.error("Erreur lors de l'inscription avec réservation:", error);
     },
   });
 }
@@ -334,65 +526,19 @@ export function useRunMatchmaking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (request: MatchmakingRunRequest) => {
-      // TODO: Remplacer par apiClient.runMatchmaking(request)
-      // For now, simulate API call
+    mutationFn: async ({ scheduledTime }: { scheduledTime: string }) => {
+      // Convert scheduledTime (HH:mm format) to ISO date-time format
+      const today = new Date();
+      const [hours, minutes] = scheduledTime.split(":");
+      today.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+      const executionTime = today.toISOString();
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Appel API réel
+      // Le backend retourne pour l'instant MatchmakingRunResponse { matchCount, executionTime }
+      // Plus tard, il retournera MatchmakingReport complet (avec phases, summary, etc.)
+      const response = await apiClient.runMatchmaking({ executionTime });
 
-      const { playerIds, scheduledTime } = request;
-
-      // Create mock run
-      const runId = `run-${Date.now()}`;
-      const matchesCreated = Math.floor(playerIds.length / 4);
-
-      const run: MatchmakingRun = {
-        id: runId,
-        status: "COMPLETED",
-        playerCount: playerIds.length,
-        matchesCreated,
-        startedAt: new Date().toISOString(),
-        completedAt: new Date(Date.now() + 2000).toISOString(),
-      };
-
-      MOCK_RUNS.push(run);
-
-      // Generate mock logs
-      const logs: MatchmakingLog[] = [
-        {
-          timestamp: new Date(Date.now() - 2000).toISOString(),
-          level: "INFO",
-          message: `Démarrage du matchmaking avec ${playerIds.length} joueurs${
-            scheduledTime ? ` à ${scheduledTime}` : ""
-          }`,
-        },
-        {
-          timestamp: new Date(Date.now() - 1500).toISOString(),
-          level: "INFO",
-          message: "Analyse des niveaux et préférences...",
-        },
-        {
-          timestamp: new Date(Date.now() - 1000).toISOString(),
-          level: "INFO",
-          message: `${matchesCreated} matchs potentiels identifiés`,
-        },
-        {
-          timestamp: new Date(Date.now() - 500).toISOString(),
-          level: "INFO",
-          message: "Vérification des disponibilités...",
-          details: { availableSlots: 12 },
-        },
-        {
-          timestamp: new Date().toISOString(),
-          level: "INFO",
-          message: `Matchmaking terminé : ${matchesCreated} matchs créés`,
-          details: { successRate: 85 },
-        },
-      ];
-
-      MOCK_LOGS[runId] = logs;
-
-      return run;
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matchmaking-runs"] });

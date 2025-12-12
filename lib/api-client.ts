@@ -9,9 +9,11 @@ import type {
   CreatePlayerRequest,
   TestPlayer,
   CreateTestPlayerRequest,
-  MatchmakingRun,
   MatchmakingRunRequest,
-  MatchmakingLog,
+  MatchmakingRunResponse,
+  MatchmakingQueueRequest,
+  MatchmakingQueueWithReservationRequest,
+  MatchmakingGroupResponseDto,
 } from "@/types/api";
 
 // Use relative path - Next.js will proxy to backend via rewrites
@@ -202,22 +204,61 @@ class ApiClient {
 
   async runMatchmaking(
     data: MatchmakingRunRequest
-  ): Promise<MatchmakingRun> {
-    return this.request<MatchmakingRun>("/admin/matchmaking/run", {
+  ): Promise<MatchmakingRunResponse> {
+    return this.request<MatchmakingRunResponse>("/backoffice/matchmaking/run", {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async getMatchmakingRun(runId: string): Promise<MatchmakingRun> {
-    return this.request<MatchmakingRun>(`/admin/matchmaking/runs/${runId}`);
-  }
+  // ============================================================================
+  // Matchmaking Queue (New endpoints)
+  // ============================================================================
 
-  async getMatchmakingLogs(runId: string): Promise<MatchmakingLog[]> {
-    return this.request<MatchmakingLog[]>(
-      `/admin/matchmaking/runs/${runId}/logs`
+  async enqueueMatchmaking(
+    request: MatchmakingQueueRequest
+  ): Promise<MatchmakingGroupResponseDto> {
+    return this.request<MatchmakingGroupResponseDto>(
+      "/backoffice/matchmaking/queue",
+      {
+        method: "POST",
+        body: JSON.stringify(request),
+      }
     );
   }
+
+  async enqueueMatchmakingWithReservation(
+    request: MatchmakingQueueWithReservationRequest
+  ): Promise<MatchmakingGroupResponseDto> {
+    return this.request<MatchmakingGroupResponseDto>(
+      "/backoffice/matchmaking/queue/with-reservation",
+      {
+        method: "POST",
+        body: JSON.stringify(request),
+      }
+    );
+  }
+
+  async dequeueMatchmaking(groupPublicId: string): Promise<void> {
+    return this.request<void>(
+      `/backoffice/matchmaking/queue/${groupPublicId}`,
+      {
+        method: "DELETE",
+      }
+    );
+  }
+
+  async getMatchmakingQueue(): Promise<MatchmakingGroupResponseDto[]> {
+    return this.request<MatchmakingGroupResponseDto[]>(
+      "/backoffice/matchmaking/queue",
+      {
+        method: "GET",
+      }
+    );
+  }
+
+  // TODO: Implement getMatchmakingRun and getMatchmakingLogs with correct types from swagger
+  // These methods were removed during /run endpoint integration as the response types changed
 }
 
 // Custom error class

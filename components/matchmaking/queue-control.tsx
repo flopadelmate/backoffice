@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { usePlayers, useEnqueuePlayer, useUpdatePlayerTolerance, usePlayerAvailability, usePlayerTeamComposition, usePlayersInCompositions } from "@/hooks/use-matchmaking";
+import { usePlayers, useEnqueuePlayer, useDequeuePlayer, useUpdatePlayerTolerance, usePlayerAvailability, usePlayerTeamComposition, usePlayersInCompositions } from "@/hooks/use-matchmaking";
 import { ListTodo, PlayCircle, X } from "lucide-react";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,6 +26,7 @@ const sideLabels: Record<"LEFT" | "RIGHT" | "BOTH", string> = {
 export function QueueControl() {
   const { data: players, isLoading } = usePlayers();
   const enqueueMutation = useEnqueuePlayer();
+  const dequeueMutation = useDequeuePlayer();
   const toleranceMutation = useUpdatePlayerTolerance();
   const [hoveredButtonId, setHoveredButtonId] = useState<string | null>(null);
   const [availabilityByPlayerId, setAvailabilityForPlayer] = usePlayerAvailability(players);
@@ -38,11 +39,15 @@ export function QueueControl() {
   }, [players]);
 
   const handleEnqueue = (playerId: string) => {
-    enqueueMutation.mutate({ playerId, enqueued: true });
+    enqueueMutation.mutate({ playerId });
   };
 
-  const handleDequeue = (playerId: string) => {
-    enqueueMutation.mutate({ playerId, enqueued: false });
+  const handleDequeue = (player: typeof players extends (infer U)[] | undefined ? U : never) => {
+    if (!player.enqueuedGroupPublicId) {
+      console.error("Player not enqueued");
+      return;
+    }
+    dequeueMutation.mutate({ groupPublicId: player.enqueuedGroupPublicId });
   };
 
   const handleAvailabilityChange = (
@@ -216,12 +221,12 @@ export function QueueControl() {
                             }
                             onClick={() =>
                               player.isEnqueued
-                                ? handleDequeue(player.publicId)
+                                ? handleDequeue(player)
                                 : handleEnqueue(player.publicId)
                             }
                             onMouseEnter={() => setHoveredButtonId(player.publicId)}
                             onMouseLeave={() => setHoveredButtonId(null)}
-                            disabled={enqueueMutation.isPending || isCoTeammateOnly}
+                            disabled={enqueueMutation.isPending || dequeueMutation.isPending || isCoTeammateOnly}
                           >
                             {player.isEnqueued && hoveredButtonId === player.publicId ? (
                               <X className="h-4 w-4 mr-2" />
