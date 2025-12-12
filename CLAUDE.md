@@ -164,7 +164,7 @@ Centralized client with:
 
 ### 4. Backend API Documentation
 
-**Swagger URL**: https://backhand-test.up.railway.app/api-docs
+**Swagger URL**: https://backhand-test.up.railway.app/api-docs/backoffice
 
 ⚠️ **Important**: Ce projet utilise uniquement les endpoints `/backoffice/*` de l'API.
 

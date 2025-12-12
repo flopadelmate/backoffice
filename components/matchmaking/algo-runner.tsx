@@ -5,12 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  usePlayers,
-  useRunMatchmaking,
-  useMatchmakingLogs,
-} from "@/hooks/use-matchmaking";
-import { Play, AlertCircle, CheckCircle, Clock, Info } from "lucide-react";
+import { usePlayers, useRunMatchmaking } from "@/hooks/use-matchmaking";
+import { Play, Clock, CheckCircle } from "lucide-react";
+import { MatchmakingResults } from "./results/matchmaking-results";
+import type { MatchmakingReport } from "@/types/api";
+
+// Type guard pour détecter si c'est un MatchmakingReport complet
+function isMatchmakingReport(data: unknown): data is MatchmakingReport {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "phases" in data &&
+    "summary" in data &&
+    "unmatchedGroups" in data
+  );
+}
 
 function getCurrentTime(): string {
   const now = new Date();
@@ -20,42 +29,19 @@ function getCurrentTime(): string {
 }
 
 export function AlgoRunner() {
-  const [lastRunId, setLastRunId] = useState<string | null>(null);
   const [scheduledTime, setScheduledTime] = useState<string>(getCurrentTime());
   const { data: players } = usePlayers();
   const runMutation = useRunMatchmaking();
-  const { data: logs, isLoading: logsLoading } = useMatchmakingLogs(lastRunId);
 
   const enqueuedPlayers = players?.filter((p) => p.isEnqueued) || [];
 
   const handleRun = () => {
-    const playerIds = enqueuedPlayers.map((p) => p.publicId);
-
-    if (playerIds.length === 0) {
+    if (enqueuedPlayers.length === 0) {
       alert("Aucun joueur en file. Inscrivez d'abord des joueurs.");
       return;
     }
 
-    runMutation.mutate(
-      { playerIds, scheduledTime },
-      {
-        onSuccess: (run) => {
-          setLastRunId(run.id);
-        },
-      }
-    );
-  };
-
-  const getLogIcon = (level: string) => {
-    switch (level) {
-      case "ERROR":
-        return <AlertCircle className="h-4 w-4 text-red-600" />;
-      case "WARNING":
-        return <AlertCircle className="h-4 w-4 text-yellow-600" />;
-      case "INFO":
-      default:
-        return <Info className="h-4 w-4 text-blue-600" />;
-    }
+    runMutation.mutate({ scheduledTime });
   };
 
   return (
@@ -92,7 +78,7 @@ export function AlgoRunner() {
             </div>
             <Button
               onClick={handleRun}
-              disabled={runMutation.isPending || enqueuedPlayers.length === 0}
+              disabled={runMutation.isPending}
               size="lg"
             >
               {runMutation.isPending ? (
@@ -117,68 +103,36 @@ export function AlgoRunner() {
         )}
 
         {runMutation.isSuccess && runMutation.data && (
-          <div className="rounded-md bg-green-50 p-4">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="font-medium text-green-900">
-                  Matchmaking terminé avec succès
-                </p>
-                <p className="text-sm text-green-700 mt-1">
-                  {runMutation.data.matchesCreated} matchs créés pour{" "}
-                  {runMutation.data.playerCount} joueurs
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="border-t pt-6">
-          <h3 className="font-medium mb-4">
-            Logs du dernier run
-            {lastRunId && <span className="text-sm text-gray-500 ml-2">#{lastRunId.slice(-6)}</span>}
-          </h3>
-
-          {!lastRunId && (
-            <div className="text-center py-8 text-gray-500">
-              Aucun run lancé. Lancez le matchmaking pour voir les logs.
-            </div>
-          )}
-
-          {lastRunId && logsLoading && (
-            <div className="text-center py-8">
-              <p className="text-sm text-gray-600">Chargement des logs...</p>
-            </div>
-          )}
-
-          {lastRunId && !logsLoading && logs && logs.length > 0 && (
-            <div className="space-y-2">
-              {logs.map((log, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-3 p-3 rounded-md border bg-white"
-                >
-                  <div className="mt-0.5">{getLogIcon(log.level)}</div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <p className="text-sm font-medium text-gray-900">
-                        {log.message}
-                      </p>
-                      <span className="text-xs text-gray-500 whitespace-nowrap">
-                        {new Date(log.timestamp).toLocaleTimeString("fr-FR")}
-                      </span>
-                    </div>
-                    {log.details && (
-                      <div className="mt-1 text-xs font-mono text-gray-600 bg-gray-50 p-2 rounded">
-                        {JSON.stringify(log.details, null, 2)}
-                      </div>
-                    )}
+          <>
+            {/* Détecter si c'est un MatchmakingReport complet ou juste MatchmakingRunResponse */}
+            {isMatchmakingReport(runMutation.data) ? (
+              // Nouveau rendu avec rapport complet
+              <MatchmakingResults report={runMutation.data} />
+            ) : (
+              // Ancien rendu simple (fallback pour compatibilité avec l'API actuelle)
+              <div className="rounded-md bg-green-50 p-4">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <div>
+                    <p className="font-medium text-green-900">
+                      Matchmaking terminé avec succès
+                    </p>
+                    <p className="text-sm text-green-700 mt-1">
+                      {runMutation.data.matchCount} match
+                      {runMutation.data.matchCount > 1 ? "s" : ""} créé
+                      {runMutation.data.matchCount > 1 ? "s" : ""} pour
+                      l&apos;heure :{" "}
+                      {new Date(runMutation.data.executionTime).toLocaleTimeString(
+                        "fr-FR",
+                        { hour: "2-digit", minute: "2-digit" }
+                      )}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </>
+        )}
       </CardContent>
     </Card>
   );

@@ -15,12 +15,6 @@
       "description": "Generated server url"
     }
   ],
-  "security": [
-    {
-      "ApiKey": [],
-      "BearerAuth": []
-    }
-  ],
   "paths": {
     "/backoffice/players/{publicId}": {
       "get": {
@@ -43,7 +37,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -53,7 +47,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -63,7 +57,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -73,17 +67,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -93,7 +77,17 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -103,7 +97,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -113,7 +107,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PlayerResponseDto"
                 }
@@ -152,7 +146,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -162,7 +156,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -172,7 +166,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -182,17 +176,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -202,7 +186,17 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -212,7 +206,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -222,7 +216,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PlayerResponseDto"
                 }
@@ -251,7 +245,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -261,7 +255,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -271,7 +265,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -281,17 +275,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -301,7 +285,17 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -311,7 +305,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -355,7 +349,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -365,7 +359,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -375,7 +369,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -385,17 +379,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -405,7 +389,17 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -415,7 +409,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -425,387 +419,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/MatchmakingGroupResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/users/me": {
-      "get": {
-        "tags": [
-          "app-user-controller"
-        ],
-        "operationId": "getCurrentUser",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserProfileResponseDto"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "app-user-controller"
-        ],
-        "operationId": "updateProfile",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserProfileRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserProfileResponseDto"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "app-user-controller"
-        ],
-        "operationId": "deleteAccount",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/app/matchmaking/queue/{groupPublicId}": {
-      "put": {
-        "tags": [
-          "matchmaking-controller"
-        ],
-        "operationId": "updateGroup_1",
-        "parameters": [
-          {
-            "name": "groupPublicId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateMatchmakingGroupDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MatchmakingGroupResponseDto"
                 }
@@ -816,12 +430,12 @@
       },
       "delete": {
         "tags": [
-          "matchmaking-controller"
+          "matchmaking-backoffice-controller"
         ],
         "operationId": "withdraw",
         "parameters": [
           {
-            "name": "groupPublicId",
+            "name": "publicId",
             "in": "path",
             "required": true,
             "schema": {
@@ -834,7 +448,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -844,7 +458,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -854,7 +468,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -864,17 +478,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -884,7 +488,17 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -894,7 +508,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -917,7 +531,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -927,7 +541,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -937,7 +551,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -947,17 +561,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -967,7 +571,17 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -977,7 +591,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -987,7 +601,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
@@ -1018,7 +632,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1028,7 +642,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1038,7 +652,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1048,17 +662,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1068,7 +672,17 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1078,7 +692,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1088,7 +702,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PlayerResponseDto"
                 }
@@ -1117,7 +731,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1127,7 +741,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1137,7 +751,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1147,17 +761,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1167,7 +771,17 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1177,7 +791,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1187,9 +801,9 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MatchmakingRunResponseDto"
+                  "$ref": "#/components/schemas/MatchmakingRunReport"
                 }
               }
             }
@@ -1198,6 +812,97 @@
       }
     },
     "/backoffice/matchmaking/queue": {
+      "get": {
+        "tags": [
+          "matchmaking-backoffice-controller"
+        ],
+        "operationId": "getActiveGroups",
+        "responses": {
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MatchmakingGroupResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "matchmaking-backoffice-controller"
@@ -1217,7 +922,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1227,7 +932,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1237,7 +942,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1247,17 +952,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1267,7 +962,17 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1277,7 +982,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1287,7 +992,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MatchmakingGroupResponseDto"
                 }
@@ -1317,7 +1022,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1327,7 +1032,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1337,7 +1042,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1347,17 +1052,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1367,7 +1062,17 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1377,7 +1082,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1387,7 +1092,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MatchmakingGroupResponseDto"
                 }
@@ -1417,7 +1122,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1427,7 +1132,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1437,7 +1142,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1447,17 +1152,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1467,7 +1162,17 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1477,7 +1182,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1487,7 +1192,7 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/JwtReponseDto"
                 }
@@ -1497,27 +1202,17 @@
         }
       }
     },
-    "/auth/refresh": {
-      "post": {
+    "/backoffice/matchmaking/runs": {
+      "get": {
         "tags": [
-          "app-auth-controller"
+          "matchmaking-backoffice-controller"
         ],
-        "operationId": "refresh",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
+        "operationId": "listRuns",
         "responses": {
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1527,7 +1222,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1537,7 +1232,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1547,17 +1242,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1567,7 +1252,17 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1577,7 +1272,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -1587,397 +1282,28 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RefreshResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/auth/logout": {
-      "post": {
-        "tags": [
-          "app-auth-controller"
-        ],
-        "operationId": "logout",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/auth/login": {
-      "post": {
-        "tags": [
-          "app-auth-controller"
-        ],
-        "operationId": "login_1",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/users/me/profile-photo": {
-      "post": {
-        "tags": [
-          "app-user-controller"
-        ],
-        "operationId": "uploadProfilePhoto",
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MatchmakingRunSummaryDto"
                   }
-                },
-                "required": [
-                  "file"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProfilePhotoUploadResponseDto"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "app-user-controller"
-        ],
-        "operationId": "deleteProfilePhoto",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK"
           }
         }
       }
     },
-    "/app/users/me/favorite-clubs/{clubPublicId}": {
-      "post": {
+    "/backoffice/matchmaking/runs/{publicId}": {
+      "get": {
         "tags": [
-          "app-user-controller"
+          "matchmaking-backoffice-controller"
         ],
-        "operationId": "addFavoriteClub",
+        "operationId": "getRunReport",
         "parameters": [
           {
-            "name": "clubPublicId",
+            "name": "publicId",
             "in": "path",
             "required": true,
             "schema": {
@@ -1990,7 +1316,7 @@
           "404": {
             "description": "Not Found",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -2000,7 +1326,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -2010,7 +1336,7 @@
           "400": {
             "description": "Bad Request",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -2020,17 +1346,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -2040,79 +1356,7 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "app-user-controller"
-        ],
-        "operationId": "removeFavoriteClub",
-        "parameters": [
-          {
-            "name": "clubPublicId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -2122,17 +1366,7 @@
           "422": {
             "description": "Unprocessable Entity",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -2142,100 +1376,7 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/app/onboarding/answer": {
-      "post": {
-        "tags": [
-          "onboarding-controller"
-        ],
-        "operationId": "submitAnswer",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SubmitAnswerRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
@@ -2245,2611 +1386,12 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AnswerResponseDto"
+                  "$ref": "#/components/schemas/MatchmakingRunReport"
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/app/notifications/{notificationPublicId}/mark-read": {
-      "post": {
-        "tags": [
-          "notification-controller"
-        ],
-        "operationId": "markNotificationAsRead",
-        "parameters": [
-          {
-            "name": "notificationPublicId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/app/notifications/mark-all-read": {
-      "post": {
-        "tags": [
-          "notification-controller"
-        ],
-        "operationId": "markAllNotificationsAsRead",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/app/matchmaking/queue": {
-      "post": {
-        "tags": [
-          "matchmaking-controller"
-        ],
-        "operationId": "enqueue_1",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateMatchmakingGroupDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/MatchmakingGroupResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/matchmaking/queue/with-reservation": {
-      "post": {
-        "tags": [
-          "matchmaking-controller"
-        ],
-        "operationId": "enqueueWithReservation_1",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EnqueueWithReservationRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/MatchmakingGroupResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/friend-requests/{username}": {
-      "post": {
-        "tags": [
-          "friend-controller"
-        ],
-        "operationId": "sendFriendRequest",
-        "parameters": [
-          {
-            "name": "username",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/FriendRequestDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/friend-requests/{requestPublicId}/reject": {
-      "post": {
-        "tags": [
-          "friend-controller"
-        ],
-        "operationId": "rejectFriendRequest",
-        "parameters": [
-          {
-            "name": "requestPublicId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/app/friend-requests/{requestPublicId}/accept": {
-      "post": {
-        "tags": [
-          "friend-controller"
-        ],
-        "operationId": "acceptFriendRequest",
-        "parameters": [
-          {
-            "name": "requestPublicId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/scraping/clubs/tenup-config": {
-      "post": {
-        "tags": [
-          "scraping-controller"
-        ],
-        "operationId": "configureTenupApiConfig",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TenupValidationPayloadDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/scraping/clubs/reparse-google-addresses": {
-      "post": {
-        "tags": [
-          "scraping-controller"
-        ],
-        "operationId": "reparseGoogleAddresses",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/scraping/clubs/normalize-names": {
-      "post": {
-        "tags": [
-          "scraping-controller"
-        ],
-        "operationId": "normalizeClubNames",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/scraping/clubs/from-tenup": {
-      "post": {
-        "tags": [
-          "scraping-controller"
-        ],
-        "operationId": "uploadClubs",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/ClubDto"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/scraping/clubs/from-google": {
-      "post": {
-        "tags": [
-          "scraping-controller"
-        ],
-        "operationId": "uploadGoogleClubs",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/GoogleClubDto"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/scraping/clubs/associate": {
-      "post": {
-        "tags": [
-          "scraping-controller"
-        ],
-        "operationId": "associateClubs",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/AssociationRequestDto"
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/scraping/blacklist": {
-      "get": {
-        "tags": [
-          "scraping-controller"
-        ],
-        "operationId": "getBlacklist",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/BlacklistResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "scraping-controller"
-        ],
-        "operationId": "blacklistClubs",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BlacklistPayloadDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "scraping-controller"
-        ],
-        "operationId": "unblacklistClub",
-        "parameters": [
-          {
-            "name": "externalId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "source",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "MANUAL",
-                "GOOGLE",
-                "TENUP",
-                "SYSTEM"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/users/me/favorite-clubs": {
-      "get": {
-        "tags": [
-          "app-user-controller"
-        ],
-        "operationId": "getFavoriteClubs",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ClubAppDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/users/me/clubs/nearby": {
-      "get": {
-        "tags": [
-          "app-user-controller"
-        ],
-        "operationId": "getNearbyClubs",
-        "parameters": [
-          {
-            "name": "lat",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "number",
-              "format": "double"
-            }
-          },
-          {
-            "name": "lng",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "number",
-              "format": "double"
-            }
-          }
-        ],
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NearbyClubDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/users/check-username": {
-      "get": {
-        "tags": [
-          "app-user-controller"
-        ],
-        "operationId": "checkUsernameAvailability",
-        "parameters": [
-          {
-            "name": "value",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/UsernameAvailabilityResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/onboarding/state": {
-      "get": {
-        "tags": [
-          "onboarding-controller"
-        ],
-        "operationId": "getOnboardingState",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/OnboardingStateDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/notifications": {
-      "get": {
-        "tags": [
-          "notification-controller"
-        ],
-        "operationId": "getNotifications",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NotificationDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/notifications/unread/count": {
-      "get": {
-        "tags": [
-          "notification-controller"
-        ],
-        "operationId": "getUnreadNotificationCount",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/NotificationCountDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/matchmaking/queue/me": {
-      "get": {
-        "tags": [
-          "matchmaking-controller"
-        ],
-        "operationId": "getMyActiveGroup",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/MatchmakingGroupResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/friends": {
-      "get": {
-        "tags": [
-          "friend-controller"
-        ],
-        "operationId": "getFriends",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/FriendDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/friend-requests/sent": {
-      "get": {
-        "tags": [
-          "friend-controller"
-        ],
-        "operationId": "getPendingSentRequests",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/FriendRequestDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/friend-requests/received": {
-      "get": {
-        "tags": [
-          "friend-controller"
-        ],
-        "operationId": "getPendingReceivedRequests",
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/FriendRequestDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/app/friends/{friendPublicId}": {
-      "delete": {
-        "tags": [
-          "friend-controller"
-        ],
-        "operationId": "removeFriend",
-        "parameters": [
-          {
-            "name": "friendPublicId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "OK"
           }
         }
       }
@@ -4887,6 +1429,7 @@
           },
           "preferredCourtPosition": {
             "type": "string",
+            "description": "Position préférée sur le court de padel",
             "enum": [
               "LEFT",
               "RIGHT",
@@ -4922,6 +1465,7 @@
           },
           "preferredCourtPosition": {
             "type": "string",
+            "description": "Position préférée sur le court de padel",
             "enum": [
               "LEFT",
               "RIGHT",
@@ -4995,10 +1539,29 @@
             "format": "uuid"
           },
           "type": {
-            "type": "string"
+            "type": "string",
+            "description": "Type de groupe de matchmaking",
+            "enum": [
+              "SOLO",
+              "PAIR_COOP_HOMO",
+              "PAIR_COOP_HETERO",
+              "PAIR_ADV_HETERO",
+              "TRIO_HOMO",
+              "TRIO_HETERO",
+              "QUATUOR"
+            ]
           },
           "status": {
-            "type": "string"
+            "type": "string",
+            "description": "Statut d'un groupe de matchmaking",
+            "enum": [
+              "ACTIVE",
+              "PENDING_CAPTAIN_CHOICE",
+              "PENDING_PLAYERS_RESPONSE",
+              "MATCHED",
+              "EXPIRED",
+              "WITHDRAWN"
+            ]
           },
           "creatorPublicId": {
             "type": "string",
@@ -5050,7 +1613,14 @@
             "type": "string"
           },
           "slot": {
-            "type": "string"
+            "type": "string",
+            "description": "Position d'un joueur dans un groupe de matchmaking",
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ]
           },
           "pmr": {
             "type": "number"
@@ -5077,133 +1647,6 @@
           }
         }
       },
-      "UpdateUserProfileRequestDto": {
-        "type": "object",
-        "properties": {
-          "username": {
-            "type": "string",
-            "maxLength": 30,
-            "minLength": 3
-          },
-          "displayName": {
-            "type": "string",
-            "maxLength": 100,
-            "minLength": 0
-          },
-          "gender": {
-            "type": "string",
-            "enum": [
-              "MALE",
-              "FEMALE",
-              "NOT_SPECIFIED"
-            ]
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "format": "date"
-          },
-          "description": {
-            "type": "string",
-            "maxLength": 1000,
-            "minLength": 0
-          },
-          "preferredHand": {
-            "type": "string",
-            "enum": [
-              "LEFT",
-              "RIGHT",
-              "BOTH"
-            ]
-          },
-          "preferredCourtPosition": {
-            "type": "string",
-            "enum": [
-              "LEFT",
-              "RIGHT",
-              "BOTH"
-            ]
-          }
-        }
-      },
-      "UserProfileResponseDto": {
-        "type": "object",
-        "properties": {
-          "publicId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "firebaseUid": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "username": {
-            "type": "string"
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "roles": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "uniqueItems": true
-          },
-          "onboarded": {
-            "type": "boolean"
-          },
-          "pmr": {
-            "type": "number"
-          },
-          "gender": {
-            "type": "string",
-            "enum": [
-              "MALE",
-              "FEMALE",
-              "NOT_SPECIFIED"
-            ]
-          },
-          "dateOfBirth": {
-            "type": "string",
-            "format": "date"
-          },
-          "description": {
-            "type": "string"
-          },
-          "preferredHand": {
-            "type": "string",
-            "enum": [
-              "LEFT",
-              "RIGHT",
-              "BOTH"
-            ]
-          },
-          "preferredCourtPosition": {
-            "type": "string",
-            "enum": [
-              "LEFT",
-              "RIGHT",
-              "BOTH"
-            ]
-          },
-          "profilePhotoUrl": {
-            "type": "string"
-          },
-          "readyToPlay": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
       "CreatePlayerDto": {
         "type": "object",
         "properties": {
@@ -5217,6 +1660,7 @@
           },
           "preferredCourtPosition": {
             "type": "string",
+            "description": "Position préférée sur le court de padel",
             "enum": [
               "LEFT",
               "RIGHT",
@@ -5235,19 +1679,139 @@
           "executionTime": {
             "type": "string",
             "format": "date-time"
+          },
+          "dryRun": {
+            "type": "boolean"
           }
         }
       },
-      "MatchmakingRunResponseDto": {
+      "MatchmakingRunReport": {
         "type": "object",
         "properties": {
-          "matchCount": {
-            "type": "integer",
-            "format": "int32"
+          "runId": {
+            "type": "string",
+            "format": "uuid"
           },
           "executionTime": {
             "type": "string",
             "format": "date-time"
+          },
+          "durationMs": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/RunSummary"
+          },
+          "phases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhaseReport"
+            }
+          },
+          "unmatchedGroups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UnmatchedGroupReport"
+            }
+          }
+        }
+      },
+      "PhaseReport": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "durationMs": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "PlayerInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "pmr": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "RunSummary": {
+        "type": "object",
+        "properties": {
+          "groupsProcessed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "matchesCreated": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playersMatched": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playersUnmatched": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "groupsExpired": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "TimeWindow": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UnmatchedGroupReport": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string"
+          },
+          "players": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlayerInfo"
+            }
+          },
+          "timeWindow": {
+            "$ref": "#/components/schemas/TimeWindow"
+          },
+          "clubs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reason": {
+            "type": "string"
           }
         }
       },
@@ -5364,1028 +1928,38 @@
           }
         }
       },
-      "RefreshRequestDto": {
-        "type": "object",
-        "properties": {
-          "refreshToken": {
-            "type": "string"
-          }
-        }
-      },
-      "RefreshResponseDto": {
-        "type": "object",
-        "properties": {
-          "jwt": {
-            "type": "string"
-          },
-          "refreshToken": {
-            "type": "string"
-          },
-          "expiresIn": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "refreshExpiresIn": {
-            "type": "integer",
-            "format": "int64"
-          }
-        }
-      },
-      "LoginRequestDto": {
-        "type": "object",
-        "properties": {
-          "firebaseToken": {
-            "type": "string"
-          }
-        }
-      },
-      "LoginResponseDto": {
-        "type": "object",
-        "properties": {
-          "jwt": {
-            "type": "string"
-          },
-          "refreshToken": {
-            "type": "string"
-          },
-          "expiresIn": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "refreshExpiresIn": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "user": {
-            "$ref": "#/components/schemas/UserInfo"
-          }
-        }
-      },
-      "UserInfo": {
+      "MatchmakingRunSummaryDto": {
         "type": "object",
         "properties": {
           "publicId": {
             "type": "string",
             "format": "uuid"
           },
-          "firebaseUid": {
-            "type": "string"
+          "executionTime": {
+            "type": "string",
+            "format": "date-time"
           },
-          "email": {
-            "type": "string"
+          "durationMs": {
+            "type": "integer",
+            "format": "int64"
           },
-          "displayName": {
-            "type": "string"
+          "groupsProcessed": {
+            "type": "integer",
+            "format": "int32"
           },
-          "roles": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "uniqueItems": true
+          "matchesCreated": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playersMatched": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "playersUnmatched": {
+            "type": "integer",
+            "format": "int32"
           },
           "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "ProfilePhotoUploadResponseDto": {
-        "type": "object",
-        "properties": {
-          "photoUrl": {
-            "type": "string"
-          }
-        }
-      },
-      "SubmitAnswerRequestDto": {
-        "type": "object",
-        "properties": {
-          "questionId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "optionId": {
-            "type": "integer",
-            "format": "int64"
-          }
-        },
-        "required": [
-          "optionId",
-          "questionId"
-        ]
-      },
-      "AnswerResponseDto": {
-        "type": "object",
-        "properties": {
-          "questionId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "optionId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "answeredAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "remainingQuestions": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "completed": {
-            "type": "boolean"
-          }
-        }
-      },
-      "FriendDto": {
-        "type": "object",
-        "properties": {
-          "publicId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "username": {
-            "type": "string"
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "profilePhotoUrl": {
-            "type": "string"
-          },
-          "pmr": {
-            "type": "number"
-          }
-        }
-      },
-      "FriendRequestDto": {
-        "type": "object",
-        "properties": {
-          "publicId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "sender": {
-            "$ref": "#/components/schemas/FriendDto"
-          },
-          "receiver": {
-            "$ref": "#/components/schemas/FriendDto"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "PENDING",
-              "ACCEPTED",
-              "REJECTED",
-              "EXPIRED"
-            ]
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "TenupValidationPayloadDto": {
-        "type": "object",
-        "properties": {
-          "validated": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int64"
-            }
-          },
-          "invalidated": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "object"
-              }
-            }
-          },
-          "invalidatedIds": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        }
-      },
-      "AddressDto": {
-        "type": "object",
-        "properties": {
-          "adresse1": {
-            "type": "string"
-          },
-          "adresse2": {
-            "type": "string"
-          },
-          "codePostal": {
-            "type": "string"
-          },
-          "ville": {
-            "type": "string"
-          },
-          "latitude": {
-            "type": "number",
-            "format": "double"
-          },
-          "longitude": {
-            "type": "number",
-            "format": "double"
-          }
-        }
-      },
-      "AdresseSimpleDto": {
-        "type": "object",
-        "properties": {
-          "adresse1": {
-            "type": "string"
-          },
-          "adresse2": {
-            "type": "string"
-          },
-          "codePostal": {
-            "type": "string"
-          },
-          "ville": {
-            "type": "string"
-          }
-        }
-      },
-      "ClubDto": {
-        "type": "object",
-        "properties": {
-          "club_id": {
-            "type": "string"
-          },
-          "lat": {
-            "type": "number",
-            "format": "double"
-          },
-          "lng": {
-            "type": "number",
-            "format": "double"
-          },
-          "nom_club": {
-            "type": "string"
-          },
-          "adresse_club": {
-            "type": "string"
-          },
-          "instagram": {
-            "type": "string"
-          },
-          "facebook": {
-            "type": "string"
-          },
-          "site_web": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "telephone": {
-            "type": "string"
-          },
-          "logo_url": {
-            "type": "string"
-          },
-          "details_complet": {
-            "$ref": "#/components/schemas/DetailsCompletDto"
-          },
-          "equipes_complet": {
-            "$ref": "#/components/schemas/EquipesCompletDto"
-          }
-        }
-      },
-      "CodeLibelleDto": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "libelle": {
-            "type": "string"
-          }
-        }
-      },
-      "DetailsCompletDto": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string"
-          },
-          "tennisFauteuil": {
-            "type": "boolean"
-          },
-          "tennisSourds": {
-            "type": "boolean"
-          },
-          "periodes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PeriodeDto"
-            }
-          },
-          "services": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ServiceDto"
-            }
-          },
-          "installations": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InstallationDto"
-            }
-          },
-          "prochainEvenement": {
-            "$ref": "#/components/schemas/EvenementDto"
-          },
-          "documents": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          },
-          "partenaires": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          },
-          "horairesEspaces": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          }
-        }
-      },
-      "EquipeDto": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "membres": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MembreDto"
-            }
-          }
-        }
-      },
-      "EquipesCompletDto": {
-        "type": "object",
-        "properties": {
-          "equipes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EquipeDto"
-            }
-          },
-          "installations": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InstallationContactDto"
-            }
-          }
-        }
-      },
-      "EvenementDateDto": {
-        "type": "object",
-        "properties": {
-          "dateDebut": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "dateFin": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "EvenementDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "idOffre": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "titre": {
-            "type": "string"
-          },
-          "inscriptionPossible": {
-            "type": "boolean"
-          },
-          "operationFft": {
-            "type": "boolean"
-          },
-          "description": {
-            "type": "string"
-          },
-          "dates": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EvenementDateDto"
-            }
-          },
-          "lieu": {
-            "type": "string"
-          },
-          "evenementsSupplementaires": {
-            "type": "boolean"
-          },
-          "activites": {
-            "type": "object"
-          }
-        }
-      },
-      "InstallationContactDto": {
-        "type": "object",
-        "properties": {
-          "nom": {
-            "type": "string"
-          },
-          "adresse": {
-            "$ref": "#/components/schemas/AdresseSimpleDto"
-          },
-          "telephone": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          }
-        }
-      },
-      "InstallationDto": {
-        "type": "object",
-        "properties": {
-          "nom": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "adresse": {
-            "$ref": "#/components/schemas/AddressDto"
-          },
-          "equipements": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CodeLibelleDto"
-            }
-          },
-          "pmr": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CodeLibelleDto"
-            }
-          },
-          "pratiques": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PratiqueDto"
-            }
-          },
-          "horairesEspaces": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          }
-        }
-      },
-      "MembreDto": {
-        "type": "object",
-        "properties": {
-          "idCrm": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "nom": {
-            "type": "string"
-          },
-          "prenom": {
-            "type": "string"
-          },
-          "photo": {
-            "type": "string"
-          },
-          "fonctions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "specialites": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "MoisDto": {
-        "type": "object",
-        "properties": {
-          "debut": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "fin": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "PeriodeDto": {
-        "type": "object",
-        "properties": {
-          "mois": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/MoisDto"
-            }
-          },
-          "pratique": {
-            "$ref": "#/components/schemas/PratiqueDto"
-          }
-        }
-      },
-      "PratiqueDto": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "libelle": {
-            "type": "string"
-          },
-          "surfaces": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SurfaceDto"
-            }
-          }
-        }
-      },
-      "ServiceDto": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "libelle": {
-            "type": "string"
-          },
-          "photo": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "reserveAdherent": {
-            "type": "boolean"
-          },
-          "url": {
-            "type": "string"
-          }
-        }
-      },
-      "SurfaceDto": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "libelle": {
-            "type": "string"
-          },
-          "nbTerrains": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "nbTerrainsCouverts": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "GoogleClubDto": {
-        "type": "object",
-        "properties": {
-          "club_id": {
-            "type": "string"
-          },
-          "display_name": {
-            "type": "string"
-          },
-          "place_id": {
-            "type": "string"
-          },
-          "rating": {
-            "type": "number",
-            "format": "double"
-          },
-          "formatted_address": {
-            "type": "string"
-          },
-          "website": {
-            "type": "string"
-          },
-          "user_ratings_total": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "opening_hours": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "google_maps_url": {
-            "type": "string"
-          },
-          "photos": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PhotoDto"
-            }
-          },
-          "phone_international": {
-            "type": "string"
-          },
-          "phone_national": {
-            "type": "string"
-          },
-          "location": {
-            "$ref": "#/components/schemas/LocationDto"
-          }
-        }
-      },
-      "LocationDto": {
-        "type": "object",
-        "properties": {
-          "lat": {
-            "type": "number",
-            "format": "double"
-          },
-          "lng": {
-            "type": "number",
-            "format": "double"
-          }
-        }
-      },
-      "PhotoDto": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string"
-          },
-          "googleMapsUri": {
-            "type": "string"
-          }
-        }
-      },
-      "AssociationRequestDto": {
-        "type": "object",
-        "properties": {
-          "installation_id": {
-            "type": "string"
-          },
-          "place_id": {
-            "type": "string"
-          }
-        }
-      },
-      "BlacklistEntryDto": {
-        "type": "object",
-        "properties": {
-          "place_id": {
-            "type": "string"
-          },
-          "reason": {
-            "type": "string"
-          }
-        }
-      },
-      "BlacklistPayloadDto": {
-        "type": "object",
-        "properties": {
-          "results": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": {
-                "type": "object"
-              }
-            }
-          },
-          "blacklistEntries": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BlacklistEntryDto"
-            }
-          }
-        }
-      },
-      "ClubAppDto": {
-        "type": "object",
-        "properties": {
-          "publicId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "address": {
-            "$ref": "#/components/schemas/AddressDto"
-          },
-          "photoUrl": {
-            "type": "string"
-          }
-        }
-      },
-      "NearbyClubDto": {
-        "type": "object",
-        "properties": {
-          "publicId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "address": {
-            "$ref": "#/components/schemas/AddressDto"
-          },
-          "photoUrl": {
-            "type": "string"
-          },
-          "distance": {
-            "type": "number",
-            "format": "double"
-          },
-          "isFavorite": {
-            "type": "boolean"
-          }
-        }
-      },
-      "UsernameAvailabilityResponseDto": {
-        "type": "object",
-        "properties": {
-          "username": {
-            "type": "string"
-          },
-          "available": {
-            "type": "boolean"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
-      },
-      "OnboardingStateDto": {
-        "type": "object",
-        "properties": {
-          "questionnaire": {
-            "$ref": "#/components/schemas/QuestionnaireResponseDto"
-          },
-          "totalQuestions": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "answeredQuestions": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "answers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserAnswerDto"
-            }
-          },
-          "completed": {
-            "type": "boolean"
-          },
-          "startedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "completedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "pmr": {
-            "type": "number"
-          }
-        }
-      },
-      "OptionDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "label": {
-            "type": "string"
-          },
-          "value": {
-            "type": "string"
-          },
-          "position": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "QuestionDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "code": {
-            "type": "string"
-          },
-          "prompt": {
-            "type": "string"
-          },
-          "position": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "options": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/OptionDto"
-            }
-          }
-        }
-      },
-      "QuestionnaireResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "code": {
-            "type": "string"
-          },
-          "version": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "title": {
-            "type": "string"
-          },
-          "questions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/QuestionDto"
-            }
-          }
-        }
-      },
-      "UserAnswerDto": {
-        "type": "object",
-        "properties": {
-          "questionId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "questionCode": {
-            "type": "string"
-          },
-          "questionText": {
-            "type": "string"
-          },
-          "optionId": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "optionValue": {
-            "type": "string"
-          },
-          "optionLabel": {
-            "type": "string"
-          },
-          "answeredAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "AppUserDto": {
-        "type": "object",
-        "properties": {
-          "publicId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "username": {
-            "type": "string"
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "profilePhotoUrl": {
-            "type": "string"
-          },
-          "pmr": {
-            "type": "number"
-          }
-        }
-      },
-      "NotificationDto": {
-        "type": "object",
-        "properties": {
-          "publicId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "FRIEND_REQUEST",
-              "FRIEND_REQUEST_ACCEPTED"
-            ]
-          },
-          "referenceId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "read": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "relatedUser": {
-            "$ref": "#/components/schemas/AppUserDto"
-          }
-        }
-      },
-      "NotificationCountDto": {
-        "type": "object",
-        "properties": {
-          "unreadCount": {
-            "type": "integer",
-            "format": "int64"
-          }
-        }
-      },
-      "BlacklistResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "externalId": {
-            "type": "string"
-          },
-          "source": {
-            "type": "string",
-            "enum": [
-              "MANUAL",
-              "GOOGLE",
-              "TENUP",
-              "SYSTEM"
-            ]
-          },
-          "reason": {
-            "type": "string"
-          },
-          "blacklistedAt": {
             "type": "string",
             "format": "date-time"
           }
