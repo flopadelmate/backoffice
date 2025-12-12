@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 import type { MatchmakingReport } from "@/types/api";
 import { transformReportToViewModel } from "@/lib/matchmaking-report-utils";
 import { ReportSummaryCards } from "./report-summary-cards";
@@ -19,29 +21,45 @@ export function MatchmakingResults({ report }: MatchmakingResultsProps) {
   // Transformation du rapport (pas de debugInfo ici, il sera calculé lazy par card)
   const viewModel = useMemo(() => transformReportToViewModel(report), [report]);
 
+  // Détection de divergence entre summary.matchesCreated et nombre réel de matchs affichés
+  const hasDivergence =
+    viewModel.summary.matchesCreated !== viewModel.createdMatches.length;
+
   return (
     <div className="space-y-6">
       {/* Summary cards avec toggle debug */}
       <ReportSummaryCards
-        counts={viewModel.counts}
+        summary={viewModel.summary}
         meta={viewModel.meta}
-        hasSummaryDivergence={viewModel.hasSummaryDivergence}
-        summaryFromBackend={viewModel.summaryFromBackend}
         debugMode={debugMode}
         onToggleDebug={setDebugMode}
       />
+
+      {/* Warning si divergence détectée */}
+      {hasDivergence && (
+        <Alert variant="destructive" className="bg-red-50 border-red-200">
+          <AlertTriangle className="h-4 w-4 text-red-600" />
+          <AlertTitle className="text-red-900">Divergence détectée</AlertTitle>
+          <AlertDescription className="text-red-800">
+            Le rapport indique {viewModel.summary.matchesCreated} match(s) créé(s),
+            mais seulement {viewModel.createdMatches.length} match(s) ont pu être
+            extraits et affichés. Cela peut indiquer un problème de parsing ou une
+            incompatibilité de structure JSON.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Tabs pour organiser les résultats */}
       <Tabs defaultValue="matches" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="matches">
-            Matchs ({viewModel.counts.matchesCreated})
+            Matchs ({viewModel.summary.matchesCreated})
           </TabsTrigger>
           <TabsTrigger value="unmatched">
-            Non matchés ({viewModel.counts.unmatchedGroups})
+            Non matchés ({viewModel.unmatchedGroups.length})
           </TabsTrigger>
           <TabsTrigger value="expired">
-            Expirés ({viewModel.counts.expiredGroups})
+            Expirés ({viewModel.expiredGroups.length})
           </TabsTrigger>
         </TabsList>
 

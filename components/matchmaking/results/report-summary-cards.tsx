@@ -1,30 +1,19 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Copy, CheckCircle, Bug, Clock, Users, UserX, Timer } from "lucide-react";
-import type { ReportCounts, ReportMeta, MatchingSummary } from "@/types/api";
+import type { ReportMeta, MatchingSummary } from "@/types/api";
 import { useState } from "react";
 
 interface ReportSummaryCardsProps {
-  counts: ReportCounts;
+  summary: MatchingSummary;
   meta: ReportMeta;
-  hasSummaryDivergence: boolean;
-  summaryFromBackend: MatchingSummary;
   debugMode: boolean;
   onToggleDebug: (enabled: boolean) => void;
 }
 
 export function ReportSummaryCards({
-  counts,
+  summary,
   meta,
-  hasSummaryDivergence,
-  summaryFromBackend,
   debugMode,
   onToggleDebug,
 }: ReportSummaryCardsProps) {
@@ -88,46 +77,6 @@ export function ReportSummaryCards({
         </Button>
       </div>
 
-      {/* Warning divergence si nécessaire */}
-      {hasSummaryDivergence && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-start gap-2">
-            <Badge variant="outline" className="bg-yellow-100 text-yellow-900 border-yellow-300">
-              ⚠️ Divergence détectée
-            </Badge>
-          </div>
-          <Accordion type="single" collapsible className="mt-2">
-            <AccordionItem value="divergence" className="border-none">
-              <AccordionTrigger className="text-sm font-medium text-yellow-900 py-2">
-                Voir les différences entre le summary backend et les données calculées
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="font-medium text-gray-700 mb-2">Calculé (UI)</p>
-                    <ul className="space-y-1 text-gray-600">
-                      <li>Matchs créés : {counts.matchesCreated}</li>
-                      <li>Joueurs matchés : {counts.playersMatched}</li>
-                      <li>Joueurs non matchés : {counts.playersUnmatched}</li>
-                      <li>Groupes expirés : {counts.expiredGroups}</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-700 mb-2">Backend (summary)</p>
-                    <ul className="space-y-1 text-gray-600">
-                      <li>Matchs créés : {summaryFromBackend.matchesCreated}</li>
-                      <li>Joueurs matchés : {summaryFromBackend.playersMatched}</li>
-                      <li>Joueurs non matchés : {summaryFromBackend.playersUnmatched}</li>
-                      <li>Groupes expirés : {summaryFromBackend.groupsExpired}</li>
-                    </ul>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      )}
-
       {/* Grid de metrics */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card>
@@ -138,7 +87,7 @@ export function ReportSummaryCards({
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
-                  {counts.groupsProcessed}
+                  {summary.groupsProcessed}
                 </p>
                 <p className="text-xs text-gray-600">Groupes traités</p>
               </div>
@@ -154,7 +103,7 @@ export function ReportSummaryCards({
               </div>
               <div>
                 <p className="text-2xl font-bold text-green-900">
-                  {counts.matchesCreated}
+                  {summary.matchesCreated}
                 </p>
                 <p className="text-xs text-gray-600">Matchs créés</p>
               </div>
@@ -170,7 +119,7 @@ export function ReportSummaryCards({
               </div>
               <div>
                 <p className="text-2xl font-bold text-green-900">
-                  {counts.playersMatched}
+                  {summary.playersMatched}
                 </p>
                 <p className="text-xs text-gray-600">Joueurs matchés</p>
               </div>
@@ -186,7 +135,7 @@ export function ReportSummaryCards({
               </div>
               <div>
                 <p className="text-2xl font-bold text-red-900">
-                  {counts.playersUnmatched}
+                  {summary.playersUnmatched}
                 </p>
                 <p className="text-xs text-gray-600">Joueurs non matchés</p>
               </div>
@@ -202,7 +151,7 @@ export function ReportSummaryCards({
               </div>
               <div>
                 <p className="text-2xl font-bold text-orange-900">
-                  {counts.expiredGroups}
+                  {summary.groupsExpired}
                 </p>
                 <p className="text-xs text-gray-600">Groupes expirés</p>
               </div>

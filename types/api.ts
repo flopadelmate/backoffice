@@ -262,6 +262,7 @@ export interface BucketEnrichmentDetail {
   reason: string;
 }
 
+// Legacy format (old API structure)
 export interface PlayerInMatch {
   name: string;
   pmr: number;
@@ -295,6 +296,33 @@ export interface FinalMatch {
   captain: string;
   status: string;
   sourceGroups: SourceGroup[];
+}
+
+// New format (current API structure with data wrapper)
+export interface NewPlayerInMatch {
+  name: string;
+  pmr: number;
+  publicId: string;
+}
+
+export interface NewSourceGroup {
+  publicId: string;
+  type: string;
+}
+
+export interface NewFinalMatch {
+  bucketId: string;
+  team1: NewPlayerInMatch[];
+  team2: NewPlayerInMatch[];
+  avgTeam1: number;
+  avgTeam2: number;
+  quality: number;
+  score: number;
+  club: string;
+  slotStart: string;
+  slotEnd: string;
+  captain: string;
+  sourceGroups: NewSourceGroup[];
 }
 
 export interface CheckDetail {
@@ -408,13 +436,75 @@ export interface UnmatchedGroup {
   reason: string;
 }
 
-// Discriminated union for phases
+// ============================================================================
+// Phase Data Wrappers (New API Format)
+// ============================================================================
+
+export interface LoadAndExpirationData {
+  groupsLoaded: number;
+  groupsExpired: number;
+  expiredDetails: ExpiredGroup[];
+}
+
+export interface BucketGenerationData {
+  totalBuckets: number;
+  anchoredBuckets: number;
+  virtualBuckets: number;
+  buckets: BucketGeneration[];
+}
+
+export interface BucketEnrichmentData {
+  totalBuckets: number;
+  bucketsWithEnoughPlayers: number;
+  bucketsFiltered: number;
+  details: BucketEnrichmentDetail[];
+}
+
+export interface HeteroMatchingData {
+  bucketsProcessed: number;
+  matchesSelected: number;
+  // Note: No details/candidates/checks in lite payload
+}
+
+export interface HomoMatchingData {
+  anchored_candidatesGenerated: number;
+  anchored_matchesSelected: number;
+  virtual_candidatesGenerated: number;
+  virtual_matchesSelected: number;
+  // Note: No details/candidates/checks in lite payload
+}
+
+export interface SlotValidationData {
+  matchesToValidate: number;
+  details: Array<{
+    bucketId: string;
+    isAnchored: boolean;
+    compatibleSlotsFound: number;
+  }>;
+}
+
+export interface FinalSelectionData {
+  finalMatchesCount: number;
+  finalMatches: NewFinalMatch[];
+}
+
+// ============================================================================
+// Discriminated union for phases (supports both legacy and new formats)
+// ============================================================================
 export type MatchingPhase =
+  // Legacy EXPIRATION phase
   | {
       name: "EXPIRATION";
       durationMs: number;
       groupsExpired: ExpiredGroup[];
     }
+  // New LOAD_AND_EXPIRATION phase (replaces EXPIRATION)
+  | {
+      name: "LOAD_AND_EXPIRATION";
+      durationMs: number;
+      data: LoadAndExpirationData;
+    }
+  // Legacy BUCKET_GENERATION phase
   | {
       name: "BUCKET_GENERATION";
       durationMs: number;
@@ -422,6 +512,13 @@ export type MatchingPhase =
       virtualBuckets: number;
       buckets: BucketGeneration[];
     }
+  // New BUCKET_GENERATION phase
+  | {
+      name: "BUCKET_GENERATION";
+      durationMs: number;
+      data: BucketGenerationData;
+    }
+  // Legacy BUCKET_ENRICHMENT phase
   | {
       name: "BUCKET_ENRICHMENT";
       durationMs: number;
@@ -430,6 +527,13 @@ export type MatchingPhase =
       bucketsFiltered: number;
       details: BucketEnrichmentDetail[];
     }
+  // New BUCKET_ENRICHMENT phase
+  | {
+      name: "BUCKET_ENRICHMENT";
+      durationMs: number;
+      data: BucketEnrichmentData;
+    }
+  // Legacy HETERO_MATCHING phase
   | {
       name: "HETERO_MATCHING";
       durationMs: number;
@@ -438,6 +542,13 @@ export type MatchingPhase =
       matchesSelected: number;
       details: MatchingDetail[];
     }
+  // New HETERO_MATCHING phase (lite payload - no details)
+  | {
+      name: "HETERO_MATCHING";
+      durationMs: number;
+      data: HeteroMatchingData;
+    }
+  // Legacy HOMO_MATCHING_ANCHORED phase
   | {
       name: "HOMO_MATCHING_ANCHORED";
       durationMs: number;
@@ -447,6 +558,7 @@ export type MatchingPhase =
       details: MatchingDetail[];
       note?: string;
     }
+  // Legacy HOMO_MATCHING_VIRTUAL phase
   | {
       name: "HOMO_MATCHING_VIRTUAL";
       durationMs: number;
@@ -456,6 +568,13 @@ export type MatchingPhase =
       details: MatchingDetail[];
       note?: string;
     }
+  // New HOMO_MATCHING phase (replaces HOMO_MATCHING_ANCHORED + HOMO_MATCHING_VIRTUAL, lite payload)
+  | {
+      name: "HOMO_MATCHING";
+      durationMs: number;
+      data: HomoMatchingData;
+    }
+  // Legacy SLOT_VALIDATION phase
   | {
       name: "SLOT_VALIDATION";
       durationMs: number;
@@ -466,12 +585,25 @@ export type MatchingPhase =
         matchesWithoutSlots: number;
       };
     }
+  // New SLOT_VALIDATION phase
+  | {
+      name: "SLOT_VALIDATION";
+      durationMs: number;
+      data: SlotValidationData;
+    }
+  // Legacy FINAL_SELECTION phase
   | {
       name: "FINAL_SELECTION";
       durationMs: number;
       inputCandidates: InputCandidates;
       selectionProcess: SelectionStep[];
       finalMatches: FinalMatch[];
+    }
+  // New FINAL_SELECTION phase
+  | {
+      name: "FINAL_SELECTION";
+      durationMs: number;
+      data: FinalSelectionData;
     };
 
 // Main report type
@@ -487,15 +619,6 @@ export interface MatchmakingReport {
 // ============================================================================
 // Matchmaking Report ViewModels (for UI)
 // ============================================================================
-
-export interface ReportCounts {
-  matchesCreated: number; // Calculated from finalMatches.length
-  playersMatched: number; // Calculated from finalMatches
-  unmatchedGroups: number; // unmatchedGroups.length
-  playersUnmatched: number; // Calculated from unmatchedGroups
-  expiredGroups: number; // groupsExpired.length
-  groupsProcessed: number; // From summary (not recalculated)
-}
 
 export interface ReportMeta {
   runId: string;
@@ -523,15 +646,24 @@ export interface UnmatchedGroupViewModel {
   reason: string;
 }
 
+// Player in match for UI (flexible format compatible with both old and new API)
+export interface PlayerInMatchViewModel {
+  name: string;
+  pmr: number;
+  playerId?: string; // New format: publicId
+  position?: "LEFT" | "RIGHT"; // Legacy format only
+  groupPublicId?: string; // Legacy format only
+}
+
 export interface CreatedMatchViewModel {
   matchId: string;
-  team1: PlayerInMatch[];
-  team2: PlayerInMatch[];
+  team1: PlayerInMatchViewModel[];
+  team2: PlayerInMatchViewModel[];
   club: string;
   slot: {
     start: Date;
     end: Date;
-    courtId: string;
+    courtId?: string; // Optional (not in new format)
   };
   stats: {
     avgTeam1: number;
@@ -541,14 +673,12 @@ export interface CreatedMatchViewModel {
   };
   captain: string;
   status: string;
-  sourceGroups: SourceGroup[];
+  sourceGroups: SourceGroup[] | NewSourceGroup[]; // Support both formats
 }
 
 export interface ReportViewModel {
   meta: ReportMeta;
-  counts: ReportCounts;
-  summaryFromBackend: MatchingSummary;
-  hasSummaryDivergence: boolean;
+  summary: MatchingSummary; // Backend est la source de vérité unique
   createdMatches: CreatedMatchViewModel[];
   unmatchedGroups: UnmatchedGroupViewModel[];
   expiredGroups: ExpiredGroupViewModel[];

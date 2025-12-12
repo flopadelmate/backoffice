@@ -6,7 +6,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckCircle, XCircle, AlertCircle, AlertTriangle } from "lucide-react";
 import type { MatchingPhase } from "@/types/api";
 import { extractDebugInfoForMatch } from "@/lib/matchmaking-report-utils";
 
@@ -24,9 +25,15 @@ export function MatchDebugPanel({ matchId, phases }: MatchDebugPanelProps) {
 
   if (!debugInfo) {
     return (
-      <div className="text-sm text-gray-500 p-4 bg-gray-50 rounded">
-        Aucune information de debug disponible pour ce match.
-      </div>
+      <Alert variant="default" className="bg-amber-50 border-amber-200">
+        <AlertTriangle className="h-4 w-4 text-amber-600" />
+        <AlertTitle className="text-amber-900">Debug indisponible (payload lite)</AlertTitle>
+        <AlertDescription className="text-amber-800">
+          Le rapport de matchmaking actuel utilise un format allégé sans détails de
+          debug (candidates, checks, processing logs). Pour obtenir des informations
+          détaillées, le backend doit renvoyer un rapport complet.
+        </AlertDescription>
+      </Alert>
     );
   }
 
