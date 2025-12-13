@@ -255,6 +255,15 @@ function toIso8601(value: string | number | Date): string {
   return new Date(parsed).toISOString();
 }
 
+function normalizeAvailability(
+  availability: { start: string | number | Date; end: string | number | Date }
+): { start: string; end: string } {
+  return {
+    start: toIso8601(availability.start),
+    end: toIso8601(availability.end),
+  };
+}
+
 function buildEnqueuePayload(
   playerId: string,
   allPlayers: Player[],
@@ -273,9 +282,11 @@ function buildEnqueuePayload(
 
   // 2. Time windows (ISO 8601)
   // ✅ CORRECTION: Fallback si availability est undefined
-  const availability = MOCK_PLAYER_AVAILABILITY[playerId] ?? generateDefaultAvailability();
-  const timeWindowStart = toIso8601(availability.start);
-  const timeWindowEnd = toIso8601(availability.end);
+  const availability =
+    MOCK_PLAYER_AVAILABILITY[playerId] ?? generateDefaultAvailability();
+  const normalizedAvailability = normalizeAvailability(availability);
+  const timeWindowStart = normalizedAvailability.start;
+  const timeWindowEnd = normalizedAvailability.end;
 
   // 3. Tolérance : utiliser override si fourni, sinon lire depuis PLAYER_TOLERANCE
   const teammateTol = teammateTolOverride ?? 0.5;
@@ -562,10 +573,10 @@ export function usePlayerAvailability(
 
       if (groupVM && !dirtyPlayerIds.has(player.publicId)) {
         // Joueur enqueued ET pas dirty → sync depuis backend
-        next[player.publicId] = {
+        next[player.publicId] = normalizeAvailability({
           start: groupVM.timeWindowStart,
           end: groupVM.timeWindowEnd,
-        };
+        });
       } else if (!next[player.publicId]) {
         // Joueur non-enqueued OU dirty → initialiser avec defaults si absent
         next[player.publicId] = { start: defaults.start, end: defaults.end };
@@ -586,10 +597,12 @@ export function usePlayerAvailability(
     playerId: string,
     availability: { start: string; end: string }
   ) => {
-    MOCK_PLAYER_AVAILABILITY[playerId] = availability;
+    const normalized = normalizeAvailability(availability);
+
+    MOCK_PLAYER_AVAILABILITY[playerId] = normalized;
     setAvailabilityByPlayerId((prev) => ({
       ...prev,
-      [playerId]: availability,
+      [playerId]: normalized,
     }));
   };
 
