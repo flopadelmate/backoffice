@@ -240,6 +240,21 @@ function getPlayersInCompositions(
 // Mapping front → back pour inscription matchmaking
 // ============================================================================
 
+function toIso8601(value: string | number | Date): string {
+  // Coerce any incoming value (including numeric timestamps) to a proper ISO string
+  if (typeof value === "number") {
+    const millis = value > 1_000_000_000_000 ? value : value * 1000; // handle seconds precision
+    return new Date(millis).toISOString();
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  const parsed = Date.parse(value);
+  return new Date(parsed).toISOString();
+}
+
 function buildEnqueuePayload(
   playerId: string,
   allPlayers: Player[],
@@ -259,8 +274,8 @@ function buildEnqueuePayload(
   // 2. Time windows (ISO 8601)
   // ✅ CORRECTION: Fallback si availability est undefined
   const availability = MOCK_PLAYER_AVAILABILITY[playerId] ?? generateDefaultAvailability();
-  const timeWindowStart = new Date(availability.start).toISOString();
-  const timeWindowEnd = new Date(availability.end).toISOString();
+  const timeWindowStart = toIso8601(availability.start);
+  const timeWindowEnd = toIso8601(availability.end);
 
   // 3. Tolérance : utiliser override si fourni, sinon lire depuis PLAYER_TOLERANCE
   const teammateTol = teammateTolOverride ?? 0.5;
