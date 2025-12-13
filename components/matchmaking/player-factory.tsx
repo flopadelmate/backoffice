@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,21 +24,14 @@ import {
 import { useCreatePlayer, generateRandomPlayerName } from "@/hooks/use-matchmaking";
 import { UserPlus } from "lucide-react";
 import type { CreatePlayerRequest } from "@/types/api";
-
-const playerSchema = z.object({
-  displayName: z.string(),
-  pmr: z.number().min(0.1, "Le PMR doit être entre 0.1 et 9.0").max(9.0, "Le PMR doit être entre 0.1 et 9.0").optional().refine(val => val !== undefined, "Le PMR est requis"),
-  preferredCourtPosition: z.enum(["LEFT", "RIGHT", "BOTH"]),
-});
-
-type PlayerFormData = z.infer<typeof playerSchema>;
+import { playerCreateSchema, type PlayerCreateFormData } from "@/lib/schemas/player";
 
 export function PlayerFactory() {
   const createPlayerMutation = useCreatePlayer();
   const [pmrInput, setPmrInput] = useState<string>('');
 
-  const form = useForm<PlayerFormData>({
-    resolver: zodResolver(playerSchema),
+  const form = useForm<PlayerCreateFormData>({
+    resolver: zodResolver(playerCreateSchema),
     defaultValues: {
       displayName: "",
       pmr: undefined,
@@ -47,7 +39,7 @@ export function PlayerFactory() {
     },
   });
 
-  const onSubmit = (data: PlayerFormData) => {
+  const onSubmit = (data: PlayerCreateFormData) => {
     const playerData: CreatePlayerRequest = {
       displayName: data.displayName.trim() === "" ? generateRandomPlayerName() : data.displayName,
       pmr: data.pmr as number, // Zod garantit que pmr est défini ici grâce au refine
@@ -95,15 +87,15 @@ export function PlayerFactory() {
                   render={({ field }) => {
                     return (
                       <FormItem>
-                        <FormLabel>PMR (0.1 - 9.0)</FormLabel>
+                        <FormLabel>PMR (1 - 8)</FormLabel>
                         <FormControl>
                           <Input
                             type="text"
                             inputMode="decimal"
-                            placeholder="5.0"
+                            placeholder="4"
                             value={pmrInput}
                             onChange={(e) => {
-                              let value = e.target.value.replace(',', '.');
+                              const value = e.target.value.replace(',', '.');
 
                               // Mettre à jour l'affichage local immédiatement
                               setPmrInput(value);

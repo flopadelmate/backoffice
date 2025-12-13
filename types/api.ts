@@ -110,6 +110,12 @@ export interface CreatePlayerRequest {
   preferredCourtPosition: "LEFT" | "RIGHT" | "BOTH";
 }
 
+export interface UpdatePlayerRequest {
+  displayName: string;
+  pmr: number;
+  preferredCourtPosition: "LEFT" | "RIGHT" | "BOTH";
+}
+
 // ============================================================================
 // Matchmaking Lab Types
 // ============================================================================

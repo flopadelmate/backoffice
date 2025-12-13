@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import type {
   Player,
   CreatePlayerRequest,
+  UpdatePlayerRequest,
   TestPlayer,
   CreateTestPlayerRequest,
   MatchmakingRun,
@@ -380,6 +381,18 @@ export function useDeletePlayer() {
       delete MOCK_PLAYER_AVAILABILITY[publicId];
       cleanPlayerFromCompositions(publicId);
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["players"] });
+    },
+  });
+}
+
+export function useUpdatePlayer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ publicId, data }: { publicId: string; data: UpdatePlayerRequest }) =>
+      apiClient.updatePlayer(publicId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["players"] });
     },

@@ -7,6 +7,7 @@ import type {
   KPIMetrics,
   Player,
   CreatePlayerRequest,
+  UpdatePlayerRequest,
   TestPlayer,
   CreateTestPlayerRequest,
   MatchmakingRunRequest,
@@ -174,6 +175,13 @@ class ApiClient {
   async deletePlayer(publicId: string): Promise<void> {
     return this.request<void>(`/backoffice/players/${publicId}`, {
       method: "DELETE",
+    });
+  }
+
+  async updatePlayer(publicId: string, data: UpdatePlayerRequest): Promise<Player> {
+    return this.request<Player>(`/backoffice/players/${publicId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
     });
   }
 

@@ -42,9 +42,7 @@ function generateTimeSlots(variant?: "start" | "end"): string[] {
     slots.push(`${h.toString().padStart(2, "0")}:30`);
   }
 
-  // Filter based on variant
   if (variant === "start") {
-    // Début: exclure avant 08:00
     return slots.filter((slot) => {
       const [hours] = slot.split(":").map(Number);
       return hours >= 8;
@@ -52,11 +50,9 @@ function generateTimeSlots(variant?: "start" | "end"): string[] {
   }
 
   if (variant === "end") {
-    // Fin: exclure entre 02:00 et 07:30 (garder 00:00-01:30 et 08:00+)
     return slots.filter((slot) => {
       const [hours, minutes] = slot.split(":").map(Number);
       const totalMinutes = hours * 60 + minutes;
-      // Garder si <= 01:30 (90 min) ou >= 08:00 (480 min)
       return totalMinutes <= 90 || totalMinutes >= 480;
     });
   }
@@ -124,23 +120,22 @@ export function DateTimePicker({
   const [open, setOpen] = React.useState(false);
 
   const effectiveMin = roundToNext30Min(minDate);
-  const minDateStart = getStartOfDay(minDate);
+  const todayStart = getStartOfDay(new Date());
   const allTimeSlots = generateTimeSlots(variant);
 
-  // Initialize selectedDate: from value, or minDate's day (not today which could be before minDate)
   const [selectedDate, setSelectedDate] = React.useState<Date>(() => {
     if (value) return getStartOfDay(new Date(value));
     return getStartOfDay(minDate);
   });
 
-  // Sync selectedDate when value changes externally
+  // ✅ FIX: ne pas écraser la navigation pendant que le popover est ouvert
   React.useEffect(() => {
-    if (value) {
-      setSelectedDate(getStartOfDay(new Date(value)));
-    }
-  }, [value]);
+    if (!value) return;
+    if (open) return; // <-- la clé
 
-  // Filter time slots based on selected date
+    setSelectedDate(getStartOfDay(new Date(value)));
+  }, [value, open]);
+
   const availableTimeSlots = React.useMemo(() => {
     if (isSameDay(selectedDate, effectiveMin)) {
       const minHour = effectiveMin.getHours();
@@ -157,14 +152,17 @@ export function DateTimePicker({
     return allTimeSlots;
   }, [selectedDate, effectiveMin, allTimeSlots]);
 
-  // Get currently selected time from value
   const selectedTime = value ? format(new Date(value), "HH:mm") : null;
 
-  const canGoPrevious = !isSameDay(selectedDate, minDateStart);
+  // ✅ FIX: plus robuste que isSameDay (si tu es après aujourd’hui → enabled)
+  const canGoPrevious =
+    getStartOfDay(selectedDate).getTime() > todayStart.getTime();
 
   const handlePreviousDay = () => {
     const prevDay = addDays(selectedDate, -1);
-    if (prevDay >= minDateStart) {
+
+    // ✅ FIX: clamp sur startOfDay pour éviter toute surprise d’heure/DST
+    if (getStartOfDay(prevDay).getTime() >= todayStart.getTime()) {
       setSelectedDate(prevDay);
     }
   };
@@ -178,7 +176,6 @@ export function DateTimePicker({
     const newDate = new Date(selectedDate);
     newDate.setHours(hours, minutes, 0, 0);
 
-    // Format as ISO local (without Z)
     const year = newDate.getFullYear();
     const month = String(newDate.getMonth() + 1).padStart(2, "0");
     const day = String(newDate.getDate()).padStart(2, "0");
@@ -206,9 +203,9 @@ export function DateTimePicker({
           {value ? formatDateTime(value) : label}
         </Button>
       </PopoverTrigger>
+
       <PopoverContent className="w-[280px] p-0" align="start">
         <div className="flex flex-col">
-          {/* Header navigation jour */}
           <div className="flex items-center justify-between border-b px-2 py-2">
             <Button
               variant="ghost"
@@ -219,9 +216,11 @@ export function DateTimePicker({
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
+
             <span className="text-sm font-medium">
               {formatDayLabel(selectedDate)}
             </span>
+
             <Button
               variant="ghost"
               size="icon"
@@ -232,11 +231,14 @@ export function DateTimePicker({
             </Button>
           </div>
 
-          {/* Grille des créneaux horaires */}
           <div className="max-h-[250px] overflow-y-auto p-2">
             <div className="grid grid-cols-4 gap-1">
               {availableTimeSlots.map((slot) => {
-                const isSelected = selectedTime === slot && value && isSameDay(selectedDate, new Date(value));
+                const isSelected =
+                  selectedTime === slot &&
+                  value &&
+                  isSameDay(selectedDate, new Date(value));
+
                 return (
                   <Button
                     key={slot}
