@@ -136,8 +136,13 @@ export function DateTimePicker({
     setSelectedDate(getStartOfDay(new Date(value)));
   }, [value, open]);
 
+  const selectedDayStart = React.useMemo(
+    () => getStartOfDay(selectedDate),
+    [selectedDate]
+  );
+
   const availableTimeSlots = React.useMemo(() => {
-    if (isSameDay(selectedDate, effectiveMin)) {
+    if (isSameDay(selectedDayStart, effectiveMin)) {
       const minHour = effectiveMin.getHours();
       const minMinute = effectiveMin.getMinutes();
 
@@ -150,25 +155,27 @@ export function DateTimePicker({
     }
 
     return allTimeSlots;
-  }, [selectedDate, effectiveMin, allTimeSlots]);
+  }, [selectedDayStart, effectiveMin, allTimeSlots]);
 
   const selectedTime = value ? format(new Date(value), "HH:mm") : null;
 
   // ✅ FIX: plus robuste que isSameDay (si tu es après aujourd’hui → enabled)
-  const canGoPrevious =
-    getStartOfDay(selectedDate).getTime() > todayStart.getTime();
+  const canGoPrevious = selectedDayStart.getTime() > todayStart.getTime();
 
   const handlePreviousDay = () => {
-    const prevDay = addDays(selectedDate, -1);
+    const previous = getStartOfDay(addDays(selectedDayStart, -1));
 
     // ✅ FIX: clamp sur startOfDay pour éviter toute surprise d’heure/DST
-    if (getStartOfDay(prevDay).getTime() >= todayStart.getTime()) {
-      setSelectedDate(prevDay);
+    if (previous.getTime() >= todayStart.getTime()) {
+      setSelectedDate(previous);
+    } else {
+      setSelectedDate(todayStart);
     }
   };
 
   const handleNextDay = () => {
-    setSelectedDate(addDays(selectedDate, 1));
+    const next = getStartOfDay(addDays(selectedDayStart, 1));
+    setSelectedDate(next);
   };
 
   const handleSlotSelect = (slot: string) => {
