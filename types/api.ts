@@ -191,6 +191,17 @@ export interface MatchmakingQueueWithReservationRequest {
   solo?: boolean; // Optional
 }
 
+export interface MatchmakingGroupUpdateRequest {
+  clubPublicIds?: string[];
+  timeWindowStart?: string; // ISO 8601 RFC3339
+  timeWindowEnd?: string; // ISO 8601 RFC3339
+  teammateTol?: number; // 0.5-10.0
+  slotA?: PlayerSlotDto;
+  slotB?: PlayerSlotDto;
+  slotC?: PlayerSlotDto;
+  slotD?: PlayerSlotDto;
+}
+
 export interface PlayerSlotResponseDto {
   playerPublicId: string;
   displayName: string;

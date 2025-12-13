@@ -14,6 +14,7 @@ import type {
   MatchmakingQueueRequest,
   MatchmakingQueueWithReservationRequest,
   MatchmakingGroupResponseDto,
+  MatchmakingGroupUpdateRequest,
 } from "@/types/api";
 
 // Use relative path - Next.js will proxy to backend via rewrites
@@ -244,6 +245,19 @@ class ApiClient {
       `/backoffice/matchmaking/queue/${groupPublicId}`,
       {
         method: "DELETE",
+      }
+    );
+  }
+
+  async updateMatchmakingGroup(
+    groupPublicId: string,
+    data: MatchmakingGroupUpdateRequest
+  ): Promise<MatchmakingGroupResponseDto> {
+    return this.request<MatchmakingGroupResponseDto>(
+      `/backoffice/matchmaking/queue/${groupPublicId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
       }
     );
   }

@@ -10,8 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { usePlayers, useEnqueuePlayer, useDequeuePlayer, useUpdatePlayerTolerance, usePlayerAvailability, usePlayerTeamComposition, usePlayersInCompositions } from "@/hooks/use-matchmaking";
-import { ListTodo, PlayCircle, X } from "lucide-react";
+import { usePlayers, useEnqueuePlayer, useDequeuePlayer, useUpdatePlayerTolerance, usePlayerAvailability, usePlayerTeamComposition, usePlayersInCompositions, useUpdateMatchmakingGroup, useMatchmakingQueue, type PlayerWithUIState } from "@/hooks/use-matchmaking";
+import { ListTodo, PlayCircle } from "lucide-react";
+import { toast } from "sonner";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useMemo } from "react";
@@ -25,10 +26,12 @@ const sideLabels: Record<"LEFT" | "RIGHT" | "BOTH", string> = {
 
 export function QueueControl() {
   const { data: players, isLoading } = usePlayers();
+  const { data: queueGroups } = useMatchmakingQueue();
   const enqueueMutation = useEnqueuePlayer();
   const dequeueMutation = useDequeuePlayer();
+  const updateMutation = useUpdateMatchmakingGroup();
   const toleranceMutation = useUpdatePlayerTolerance();
-  const [hoveredButtonId, setHoveredButtonId] = useState<string | null>(null);
+  const [updatingPlayerId, setUpdatingPlayerId] = useState<string | null>(null);
   const [availabilityByPlayerId, setAvailabilityForPlayer] = usePlayerAvailability(players);
   const [compositionByPlayerId, setCompositionForPlayer] = usePlayerTeamComposition(players);
   const playersInCompositions = usePlayersInCompositions(compositionByPlayerId);
@@ -65,6 +68,77 @@ export function QueueControl() {
   const handleToleranceChange = (playerId: string, value: string) => {
     const tolerance = value === "null" ? null : parseFloat(value);
     toleranceMutation.mutate({ playerId, tolerance });
+  };
+
+  // Helper pour récupérer les slots existants du groupe
+  const getSlotsFromGroup = (groupPublicId: string) => {
+    const group = queueGroups?.find((g) => g.publicId === groupPublicId);
+    if (!group) return null;
+
+    const slots: Record<string, { playerPublicId: string }> = {};
+    group.players.forEach((p) => {
+      slots[`slot${p.slot}`] = { playerPublicId: p.playerPublicId };
+    });
+    return slots;
+  };
+
+  // Vérifie si le bouton Update peut être activé
+  const canUpdate = (player: PlayerWithUIState) => {
+    if (!player.isEnqueued || !player.enqueuedGroupPublicId) return false;
+    const availability = availabilityByPlayerId[player.publicId];
+    if (!availability?.start || !availability?.end) return false;
+    // Vérifie que le groupe existe dans queueGroups
+    const groupExists = queueGroups?.some((g) => g.publicId === player.enqueuedGroupPublicId);
+    return !!groupExists;
+  };
+
+  // Handler pour Update avec validation groupe + toast
+  const handleUpdate = (player: PlayerWithUIState) => {
+    if (!player.enqueuedGroupPublicId) return;
+
+    const availability = availabilityByPlayerId[player.publicId];
+    if (!availability?.start || !availability?.end) {
+      toast.error("Veuillez définir les disponibilités");
+      return;
+    }
+
+    // Récupérer les slots existants
+    const existingSlots = getSlotsFromGroup(player.enqueuedGroupPublicId);
+    if (!existingSlots) {
+      toast.error("Groupe introuvable");
+      return;
+    }
+
+    // Clubs favoris (même logique que POST)
+    const clubPublicIds = player.favoriteClubs?.map((c) => c.publicId) ?? [];
+
+    // Tolérance (même logique que POST)
+    const teammateTol = player.tolerance === null ? 10 : Math.max(player.tolerance ?? 0.5, 0.5);
+
+    setUpdatingPlayerId(player.publicId);
+
+    updateMutation.mutate(
+      {
+        groupPublicId: player.enqueuedGroupPublicId,
+        data: {
+          clubPublicIds,
+          timeWindowStart: new Date(availability.start).toISOString(),
+          timeWindowEnd: new Date(availability.end).toISOString(),
+          teammateTol,
+          ...existingSlots,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Groupe mis à jour");
+          setUpdatingPlayerId(null);
+        },
+        onError: (error) => {
+          toast.error(`Erreur: ${error.message}`);
+          setUpdatingPlayerId(null);
+        },
+      }
+    );
   };
 
   return (
@@ -210,31 +284,35 @@ export function QueueControl() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant={
-                              player.isEnqueued && hoveredButtonId === player.publicId
-                                ? "destructive"
-                                : player.isEnqueued
-                                ? "outline"
-                                : "default"
-                            }
-                            onClick={() =>
-                              player.isEnqueued
-                                ? handleDequeue(player)
-                                : handleEnqueue(player.publicId)
-                            }
-                            onMouseEnter={() => setHoveredButtonId(player.publicId)}
-                            onMouseLeave={() => setHoveredButtonId(null)}
-                            disabled={enqueueMutation.isPending || dequeueMutation.isPending || isCoTeammateOnly}
-                          >
-                            {player.isEnqueued && hoveredButtonId === player.publicId ? (
-                              <X className="h-4 w-4 mr-2" />
-                            ) : (
+                          {player.isEnqueued ? (
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleUpdate(player)}
+                                disabled={!canUpdate(player) || updatingPlayerId === player.publicId}
+                              >
+                                {updatingPlayerId === player.publicId ? "..." : "Update"}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDequeue(player)}
+                                disabled={dequeueMutation.isPending}
+                              >
+                                Quitter
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={() => handleEnqueue(player.publicId)}
+                              disabled={enqueueMutation.isPending || isCoTeammateOnly}
+                            >
                               <PlayCircle className="h-4 w-4 mr-2" />
-                            )}
-                            {player.isEnqueued ? "En file" : "Inscrire"}
-                          </Button>
+                              Inscrire
+                            </Button>
+                          )}
                         </TableCell>
                       </TableRow>
                     );

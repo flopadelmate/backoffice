@@ -13,8 +13,12 @@ import type {
   MatchmakingQueueWithReservationRequest,
   MatchmakingReport,
   MatchmakingGroupResponseDto,
+  MatchmakingGroupUpdateRequest,
 } from "@/types/api";
 import mockReport from "@/docs/rapport_matchmaking_1.json";
+
+// Query keys centralisées
+export const MATCHMAKING_QUEUE_KEY = ["matchmaking-queue"] as const;
 
 // Type enrichi : Player backend + état UI local
 export interface PlayerWithUIState extends Player {
@@ -213,7 +217,7 @@ export function useMatchmakingQueue() {
   const { isAuthenticated } = useAuth();
 
   return useQuery({
-    queryKey: ["matchmaking-queue"],
+    queryKey: MATCHMAKING_QUEUE_KEY,
     queryFn: () => apiClient.getMatchmakingQueue(),
     refetchInterval: 7000, // Poll toutes les 7s
     enabled: isAuthenticated, // Éviter de poll hors session
@@ -324,7 +328,7 @@ export function useEnqueuePlayer() {
     },
     onSuccess: () => {
       // Invalider uniquement la queue (players se met à jour automatiquement)
-      queryClient.invalidateQueries({ queryKey: ["matchmaking-queue"] });
+      queryClient.invalidateQueries({ queryKey: MATCHMAKING_QUEUE_KEY });
     },
     onError: (error) => {
       console.error("Erreur lors de l'inscription:", error);
@@ -341,10 +345,30 @@ export function useDequeuePlayer() {
     },
     onSuccess: () => {
       // Invalider uniquement la queue
-      queryClient.invalidateQueries({ queryKey: ["matchmaking-queue"] });
+      queryClient.invalidateQueries({ queryKey: MATCHMAKING_QUEUE_KEY });
     },
     onError: (error) => {
       console.error("Erreur lors de la désinscription:", error);
+    },
+  });
+}
+
+export function useUpdateMatchmakingGroup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      groupPublicId,
+      data,
+    }: {
+      groupPublicId: string;
+      data: MatchmakingGroupUpdateRequest;
+    }) => {
+      return apiClient.updateMatchmakingGroup(groupPublicId, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: MATCHMAKING_QUEUE_KEY });
+      queryClient.invalidateQueries({ queryKey: ["players"] });
     },
   });
 }
@@ -400,7 +424,7 @@ export function useEnqueueWithReservation() {
     },
     onSuccess: () => {
       // Invalider uniquement la queue
-      queryClient.invalidateQueries({ queryKey: ["matchmaking-queue"] });
+      queryClient.invalidateQueries({ queryKey: MATCHMAKING_QUEUE_KEY });
     },
     onError: (error) => {
       console.error("Erreur lors de l'inscription avec réservation:", error);
