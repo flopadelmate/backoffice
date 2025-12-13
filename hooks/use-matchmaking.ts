@@ -167,7 +167,8 @@ function getPlayersInCompositions(
 
 function buildEnqueuePayload(
   playerId: string,
-  allPlayers: Player[]
+  allPlayers: Player[],
+  teammateTolOverride?: number // Tolérance passée explicitement depuis le composant
 ): MatchmakingQueueRequest {
   const player = allPlayers.find((p) => p.publicId === playerId);
   if (!player) {
@@ -186,11 +187,8 @@ function buildEnqueuePayload(
   const timeWindowStart = new Date(availability.start).toISOString();
   const timeWindowEnd = new Date(availability.end).toISOString();
 
-  // 3. Tolérance (clamp 0.25 → 0.5, null → 10)
-  // ✅ CORRECTION: Distinguer undefined vs null
-  const toleranceRaw = PLAYER_TOLERANCE.get(playerId);
-  const tolerance = toleranceRaw === undefined ? 0.5 : toleranceRaw;
-  const teammateTol = tolerance === null ? 10 : Math.max(tolerance, 0.5);
+  // 3. Tolérance : utiliser override si fourni, sinon lire depuis PLAYER_TOLERANCE
+  const teammateTol = teammateTolOverride ?? 0.5;
 
   // 4. Slots (omit si vide, pas null)
   const composition = PLAYER_TEAM_COMPOSITION[playerId];
@@ -322,8 +320,8 @@ export function useEnqueuePlayer() {
   const { data: players } = usePlayers();
 
   return useMutation({
-    mutationFn: async ({ playerId }: { playerId: string }) => {
-      const payload = buildEnqueuePayload(playerId, players ?? []);
+    mutationFn: async ({ playerId, teammateTol }: { playerId: string; teammateTol?: number }) => {
+      const payload = buildEnqueuePayload(playerId, players ?? [], teammateTol);
       return apiClient.enqueueMatchmaking(payload);
     },
     onSuccess: () => {
@@ -428,28 +426,6 @@ export function useEnqueueWithReservation() {
     },
     onError: (error) => {
       console.error("Erreur lors de l'inscription avec réservation:", error);
-    },
-  });
-}
-
-export function useUpdatePlayerTolerance() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      playerId,
-      tolerance,
-    }: {
-      playerId: string;
-      tolerance: number | null;
-    }) => {
-      // Phase 1: pur état UI local
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
-      PLAYER_TOLERANCE.set(playerId, tolerance);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["players"] });
     },
   });
 }

@@ -10,13 +10,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { usePlayers, useEnqueuePlayer, useDequeuePlayer, useUpdatePlayerTolerance, usePlayerAvailability, usePlayerTeamComposition, usePlayersInCompositions, useUpdateMatchmakingGroup, useMatchmakingQueue, type PlayerWithUIState } from "@/hooks/use-matchmaking";
+import { usePlayers, useEnqueuePlayer, useDequeuePlayer, usePlayerAvailability, usePlayerTeamComposition, usePlayersInCompositions, useUpdateMatchmakingGroup, useMatchmakingQueue, type PlayerWithUIState } from "@/hooks/use-matchmaking";
 import { ListTodo, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { TeamCompositionWidget } from "./team-composition-widget";
+import type { MatchmakingGroupUpdateRequest, PlayerSlotDto } from "@/types/api";
+
+// ============================================================================
+// Types pour le pattern "server state + draft state"
+// ============================================================================
+
+interface GroupDraft {
+  teammateTol: number;
+  timeWindowStart: string;
+  timeWindowEnd: string;
+  clubPublicIds: string[];
+}
+
+interface GroupEditState {
+  draft: GroupDraft;
+  dirty: boolean;
+  awaitingAck: boolean; // true après PUT, évite que le poll écrase avant sync backend
+}
 
 const sideLabels: Record<"LEFT" | "RIGHT" | "BOTH", string> = {
   LEFT: "Gauche",
@@ -30,11 +48,124 @@ export function QueueControl() {
   const enqueueMutation = useEnqueuePlayer();
   const dequeueMutation = useDequeuePlayer();
   const updateMutation = useUpdateMatchmakingGroup();
-  const toleranceMutation = useUpdatePlayerTolerance();
-  const [updatingPlayerId, setUpdatingPlayerId] = useState<string | null>(null);
   const [availabilityByPlayerId, setAvailabilityForPlayer] = usePlayerAvailability(players);
   const [compositionByPlayerId, setCompositionForPlayer] = usePlayerTeamComposition(players);
   const playersInCompositions = usePlayersInCompositions(compositionByPlayerId);
+
+  // ============================================================================
+  // State draft/dirty par groupe (pattern "server state + draft state")
+  // ============================================================================
+  const [editStateByGroupId, setEditStateByGroupId] = useState<Record<string, GroupEditState>>({});
+
+  // State pour la tolérance pré-inscription (joueurs non encore en queue)
+  const [preEnqueueTolByPlayerId, setPreEnqueueTolByPlayerId] = useState<Record<string, number>>({});
+
+  // Sync polling → draft (seulement si pas dirty ET pas awaitingAck)
+  useEffect(() => {
+    if (!queueGroups) return;
+
+    setEditStateByGroupId((prev) => {
+      const next: Record<string, GroupEditState> = {};
+
+      queueGroups.forEach((group) => {
+        const existing = prev[group.publicId];
+
+        // Si dirty ou awaitingAck → on garde le draft local intact
+        if (existing?.dirty || existing?.awaitingAck) {
+          // Vérifier si le backend a bien reflété nos changements (pour clear awaitingAck)
+          if (existing.awaitingAck) {
+            const backendMatches =
+              group.teammateTol === existing.draft.teammateTol &&
+              group.timeWindowStart === existing.draft.timeWindowStart &&
+              group.timeWindowEnd === existing.draft.timeWindowEnd;
+
+            if (backendMatches) {
+              // Backend synced → on peut clear awaitingAck et sync
+              next[group.publicId] = {
+                draft: {
+                  teammateTol: group.teammateTol ?? 0.5,
+                  timeWindowStart: group.timeWindowStart ?? "",
+                  timeWindowEnd: group.timeWindowEnd ?? "",
+                  clubPublicIds: group.clubPublicIds ?? [],
+                },
+                dirty: false,
+                awaitingAck: false,
+              };
+            } else {
+              // Backend pas encore synced → garder le draft
+              next[group.publicId] = existing;
+            }
+          } else {
+            // Dirty mais pas awaitingAck → garder tel quel
+            next[group.publicId] = existing;
+          }
+        } else {
+          // Pas dirty → sync depuis le backend
+          next[group.publicId] = {
+            draft: {
+              teammateTol: group.teammateTol ?? 0.5,
+              timeWindowStart: group.timeWindowStart ?? "",
+              timeWindowEnd: group.timeWindowEnd ?? "",
+              clubPublicIds: group.clubPublicIds ?? [],
+            },
+            dirty: false,
+            awaitingAck: false,
+          };
+        }
+      });
+
+      // Les groupIds absents de queueGroups sont automatiquement supprimés
+      return next;
+    });
+  }, [queueGroups]);
+
+  // ============================================================================
+  // Helpers pour le draft
+  // ============================================================================
+
+  const getDefaultDraft = (groupId: string): GroupDraft => {
+    const group = queueGroups?.find((g) => g.publicId === groupId);
+    return {
+      teammateTol: group?.teammateTol ?? 0.5,
+      timeWindowStart: group?.timeWindowStart ?? "",
+      timeWindowEnd: group?.timeWindowEnd ?? "",
+      clubPublicIds: group?.clubPublicIds ?? [],
+    };
+  };
+
+  const updateDraft = (groupId: string, field: keyof GroupDraft, value: GroupDraft[keyof GroupDraft]) => {
+    setEditStateByGroupId((prev) => {
+      const existing = prev[groupId];
+      const baseDraft = existing?.draft ?? getDefaultDraft(groupId);
+
+      return {
+        ...prev,
+        [groupId]: {
+          draft: { ...baseDraft, [field]: value },
+          dirty: true,
+          awaitingAck: false,
+        },
+      };
+    });
+  };
+
+  const canUpdate = (groupId: string): boolean => {
+    const editState = editStateByGroupId[groupId];
+    if (!editState) return false;
+
+    const { draft, dirty } = editState;
+
+    // Disabled si pas dirty OU champs requis manquants OU mutation pending
+    if (!dirty) return false;
+    if (!draft.timeWindowStart || !draft.timeWindowEnd) return false;
+    if (updateMutation.isPending) return false;
+
+    return true;
+  };
+
+  // ============================================================================
+  // Handlers
+  // ============================================================================
 
   // Liste des IDs des joueurs enqueued
   const enqueuedPlayerIds = useMemo(() => {
@@ -42,7 +173,8 @@ export function QueueControl() {
   }, [players]);
 
   const handleEnqueue = (playerId: string) => {
-    enqueueMutation.mutate({ playerId });
+    const teammateTol = preEnqueueTolByPlayerId[playerId] ?? 0.5;
+    enqueueMutation.mutate({ playerId, teammateTol });
   };
 
   const handleDequeue = (player: typeof players extends (infer U)[] | undefined ? U : never) => {
@@ -65,77 +197,74 @@ export function QueueControl() {
     setAvailabilityForPlayer(playerId, { start: newStart, end: newEnd });
   };
 
-  const handleToleranceChange = (playerId: string, value: string) => {
-    const tolerance = value === "null" ? null : parseFloat(value);
-    toleranceMutation.mutate({ playerId, tolerance });
+  // Helper pour afficher la tolérance
+  const getDisplayTolerance = (player: PlayerWithUIState): number => {
+    if (player.isEnqueued && player.enqueuedGroupPublicId) {
+      return editStateByGroupId[player.enqueuedGroupPublicId]?.draft.teammateTol ?? 0.5;
+    }
+    return preEnqueueTolByPlayerId[player.publicId] ?? 0.5;
   };
 
-  // Helper pour récupérer les slots existants du groupe
-  const getSlotsFromGroup = (groupPublicId: string) => {
-    const group = queueGroups?.find((g) => g.publicId === groupPublicId);
-    if (!group) return null;
+  // Handler unifié pour la tolérance (inscrit ou non)
+  const handleToleranceChange = (player: PlayerWithUIState, value: string) => {
+    const tol = value === "all" ? 10 : parseFloat(value);
 
-    const slots: Record<string, { playerPublicId: string }> = {};
-    group.players.forEach((p) => {
-      slots[`slot${p.slot}`] = { playerPublicId: p.playerPublicId };
-    });
-    return slots;
-  };
-
-  // Vérifie si le bouton Update peut être activé
-  const canUpdate = (player: PlayerWithUIState) => {
-    if (!player.isEnqueued || !player.enqueuedGroupPublicId) return false;
-    const availability = availabilityByPlayerId[player.publicId];
-    if (!availability?.start || !availability?.end) return false;
-    // Vérifie que le groupe existe dans queueGroups
-    const groupExists = queueGroups?.some((g) => g.publicId === player.enqueuedGroupPublicId);
-    return !!groupExists;
+    if (player.isEnqueued && player.enqueuedGroupPublicId) {
+      // Joueur inscrit → update draft du groupe
+      updateDraft(player.enqueuedGroupPublicId, "teammateTol", tol);
+    } else {
+      // Joueur non inscrit → update state local pré-inscription
+      setPreEnqueueTolByPlayerId((prev) => ({ ...prev, [player.publicId]: tol }));
+    }
   };
 
   // Handler pour Update avec validation groupe + toast
   const handleUpdate = (player: PlayerWithUIState) => {
-    if (!player.enqueuedGroupPublicId) return;
+    const groupId = player.enqueuedGroupPublicId;
+    if (!groupId) return;
 
-    const availability = availabilityByPlayerId[player.publicId];
-    if (!availability?.start || !availability?.end) {
-      toast.error("Veuillez définir les disponibilités");
-      return;
-    }
+    const editState = editStateByGroupId[groupId];
+    if (!editState) return;
 
-    // Récupérer les slots existants
-    const existingSlots = getSlotsFromGroup(player.enqueuedGroupPublicId);
-    if (!existingSlots) {
+    // Récupérer le groupe server pour les slots
+    const serverGroup = queueGroups?.find((g) => g.publicId === groupId);
+    if (!serverGroup) {
       toast.error("Groupe introuvable");
       return;
     }
 
-    // Clubs favoris (même logique que POST)
-    const clubPublicIds = player.favoriteClubs?.map((c) => c.publicId) ?? [];
-
-    // Tolérance (même logique que POST)
-    const teammateTol = player.tolerance === null ? 10 : Math.max(player.tolerance ?? 0.5, 0.5);
-
-    setUpdatingPlayerId(player.publicId);
+    // Construire les slots depuis le groupe server (typés correctement)
+    const slots: Pick<MatchmakingGroupUpdateRequest, "slotA" | "slotB" | "slotC" | "slotD"> = {};
+    serverGroup.players.forEach((p) => {
+      const slotDto: PlayerSlotDto = { playerPublicId: p.playerPublicId };
+      if (p.slot === "A") slots.slotA = slotDto;
+      else if (p.slot === "B") slots.slotB = slotDto;
+      else if (p.slot === "C") slots.slotC = slotDto;
+      else if (p.slot === "D") slots.slotD = slotDto;
+    });
 
     updateMutation.mutate(
       {
-        groupPublicId: player.enqueuedGroupPublicId,
+        groupPublicId: groupId,
         data: {
-          clubPublicIds,
-          timeWindowStart: new Date(availability.start).toISOString(),
-          timeWindowEnd: new Date(availability.end).toISOString(),
-          teammateTol,
-          ...existingSlots,
+          clubPublicIds: editState.draft.clubPublicIds,
+          timeWindowStart: editState.draft.timeWindowStart,
+          timeWindowEnd: editState.draft.timeWindowEnd,
+          teammateTol: editState.draft.teammateTol,
+          ...slots,
         },
       },
       {
         onSuccess: () => {
+          // Clear dirty + set awaitingAck pour éviter que le poll écrase
+          setEditStateByGroupId((prev) => ({
+            ...prev,
+            [groupId]: { ...prev[groupId], dirty: false, awaitingAck: true },
+          }));
           toast.success("Groupe mis à jour");
-          setUpdatingPlayerId(null);
         },
         onError: (error) => {
           toast.error(`Erreur: ${error.message}`);
-          setUpdatingPlayerId(null);
         },
       }
     );
@@ -221,22 +350,27 @@ export function QueueControl() {
                         <TableCell>{player.pmr.toFixed(1)}</TableCell>
                         <TableCell>{sideLabel}</TableCell>
                         <TableCell>
-                          <Select
-                            value={player.tolerance === null ? "null" : player.tolerance.toString()}
-                            onValueChange={(value) => handleToleranceChange(player.publicId, value)}
-                            disabled={toleranceMutation.isPending}
-                          >
-                            <SelectTrigger className="w-[120px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="0.25">± 0.25</SelectItem>
-                              <SelectItem value="0.5">± 0.5</SelectItem>
-                              <SelectItem value="1">± 1</SelectItem>
-                              <SelectItem value="2">± 2</SelectItem>
-                              <SelectItem value="null">Tout</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          {(() => {
+                            const displayTol = getDisplayTolerance(player);
+
+                            return (
+                              <Select
+                                value={displayTol === 10 ? "all" : displayTol.toString()}
+                                onValueChange={(value) => handleToleranceChange(player, value)}
+                              >
+                                <SelectTrigger className="w-[100px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="0.25">± 0.25</SelectItem>
+                                  <SelectItem value="0.5">± 0.5</SelectItem>
+                                  <SelectItem value="1">± 1</SelectItem>
+                                  <SelectItem value="2">± 2</SelectItem>
+                                  <SelectItem value="all">Tout</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           <TeamCompositionWidget
@@ -290,9 +424,9 @@ export function QueueControl() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleUpdate(player)}
-                                disabled={!canUpdate(player) || updatingPlayerId === player.publicId}
+                                disabled={!canUpdate(player.enqueuedGroupPublicId!)}
                               >
-                                {updatingPlayerId === player.publicId ? "..." : "Update"}
+                                {updateMutation.isPending ? "..." : "Update"}
                               </Button>
                               <Button
                                 size="sm"
