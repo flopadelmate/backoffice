@@ -35,6 +35,80 @@ let MOCK_RUNS: MatchmakingRun[] = [];
 let MOCK_LOGS: Record<string, MatchmakingLog[]> = {};
 let MOCK_PLAYER_AVAILABILITY: Record<string, { start: string; end: string }> = {};
 
+// ============================================================================
+// GroupViewModel : Données backend d'un groupe (group-centric, read-only)
+// ============================================================================
+
+export interface GroupViewModel {
+  readonly groupPublicId: string;
+  readonly ownerPublicId: string; // group.creatorPublicId (pas slot A!)
+  readonly teammateTol: number;
+  readonly timeWindowStart: string;
+  readonly timeWindowEnd: string;
+  readonly clubPublicIds: readonly string[];
+  readonly composition: {
+    readonly slotA: string | null;
+    readonly slotB: string | null;
+    readonly slotC: string | null;
+    readonly slotD: string | null;
+  };
+}
+
+/**
+ * Construit un Map<playerId, GroupViewModel> à partir des données backend.
+ * Tous les joueurs d'un même groupe pointent vers le même ViewModel (read-only).
+ */
+function buildGroupByPlayerId(
+  queueGroups: MatchmakingGroupResponseDto[]
+): Map<string, GroupViewModel> {
+  const map = new Map<string, GroupViewModel>();
+
+  for (const group of queueGroups) {
+    const slotA = group.players.find((p) => p.slot === "A");
+    const slotB = group.players.find((p) => p.slot === "B");
+    const slotC = group.players.find((p) => p.slot === "C");
+    const slotD = group.players.find((p) => p.slot === "D");
+
+    const viewModel: GroupViewModel = Object.freeze({
+      groupPublicId: group.publicId,
+      ownerPublicId: group.creatorPublicId, // Owner = creatorPublicId
+      teammateTol: group.teammateTol,
+      timeWindowStart: group.timeWindowStart ?? "",
+      timeWindowEnd: group.timeWindowEnd ?? "",
+      clubPublicIds: Object.freeze(group.clubPublicIds ?? []),
+      composition: Object.freeze({
+        slotA: slotA?.playerPublicId ?? null,
+        slotB: slotB?.playerPublicId ?? null,
+        slotC: slotC?.playerPublicId ?? null,
+        slotD: slotD?.playerPublicId ?? null,
+      }),
+    });
+
+    // Tous les joueurs du groupe pointent vers le même ViewModel
+    for (const playerSlot of group.players) {
+      map.set(playerSlot.playerPublicId, viewModel);
+    }
+  }
+
+  return map;
+}
+
+/**
+ * Hook exposant le mapping playerId → GroupViewModel.
+ * Permet d'accéder aux données backend (tolérance, dispos, composition) pour les joueurs enqueued.
+ */
+export function useGroupByPlayerId(): Map<string, GroupViewModel> {
+  const { data: queueGroups } = useMatchmakingQueue();
+
+  return useMemo(
+    () =>
+      queueGroups
+        ? buildGroupByPlayerId(queueGroups)
+        : new Map<string, GroupViewModel>(),
+    [queueGroups]
+  );
+}
+
 // Helpers pour dériver l'état de la queue depuis les données backend
 function buildEnqueuedPlayerSet(
   queueGroups: MatchmakingGroupResponseDto[]
@@ -430,28 +504,54 @@ export function useEnqueueWithReservation() {
   });
 }
 
-export function usePlayerAvailability(players: PlayerWithUIState[] | undefined) {
+/**
+ * Hook pour gérer les disponibilités des joueurs.
+ * - Pour les joueurs enqueued ET pas dirty : sync depuis GroupViewModel (backend)
+ * - Pour les joueurs non-enqueued OU dirty : utilise le state local
+ * - Nettoie MOCK_PLAYER_AVAILABILITY quand un joueur est désenqueué
+ */
+export function usePlayerAvailability(
+  players: PlayerWithUIState[] | undefined,
+  groupByPlayerId: Map<string, GroupViewModel>,
+  dirtyPlayerIds: Set<string>
+) {
   const [availabilityByPlayerId, setAvailabilityByPlayerId] = useState<
     Record<string, { start: string; end: string }>
   >({});
 
-  // Synchroniser depuis MOCK_PLAYER_AVAILABILITY au mount et quand players change
+  // Synchroniser depuis backend (groupVM) si pas dirty, sinon garder le state local
   useEffect(() => {
     if (!players) return;
 
     const defaults = generateDefaultAvailability();
     const next = { ...MOCK_PLAYER_AVAILABILITY };
 
-    // Initialiser les nouveaux joueurs avec les defaults
+    // Track les IDs des joueurs actuellement enqueued pour le cleanup
+    const currentEnqueuedIds = new Set(groupByPlayerId.keys());
+
     players.forEach((player) => {
-      if (!next[player.publicId]) {
+      const groupVM = groupByPlayerId.get(player.publicId);
+
+      if (groupVM && !dirtyPlayerIds.has(player.publicId)) {
+        // Joueur enqueued ET pas dirty → sync depuis backend
+        next[player.publicId] = {
+          start: groupVM.timeWindowStart,
+          end: groupVM.timeWindowEnd,
+        };
+      } else if (!next[player.publicId]) {
+        // Joueur non-enqueued OU dirty → initialiser avec defaults si absent
         next[player.publicId] = { start: defaults.start, end: defaults.end };
       }
+      // Si dirty → on garde le state local existant (pas de modification)
     });
+
+    // Cleanup : si un joueur n'est plus enqueued et avait des données backend,
+    // on le laisse avec ses valeurs actuelles (permet de ré-enqueue avec mêmes dispos)
+    // Note: le cleanup complet se fait dans useDeletePlayer
 
     MOCK_PLAYER_AVAILABILITY = next;
     setAvailabilityByPlayerId(next);
-  }, [players]);
+  }, [players, groupByPlayerId, dirtyPlayerIds]);
 
   // Setter qui écrit dans les deux : module scope + state React
   const setAvailabilityForPlayer = (

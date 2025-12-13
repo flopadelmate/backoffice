@@ -10,13 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { usePlayers, useEnqueuePlayer, useDequeuePlayer, usePlayerAvailability, usePlayerTeamComposition, usePlayersInCompositions, useUpdateMatchmakingGroup, useMatchmakingQueue, type PlayerWithUIState } from "@/hooks/use-matchmaking";
+import { usePlayers, useEnqueuePlayer, useDequeuePlayer, usePlayerAvailability, usePlayerTeamComposition, usePlayersInCompositions, useUpdateMatchmakingGroup, useMatchmakingQueue, useGroupByPlayerId, type PlayerWithUIState } from "@/hooks/use-matchmaking";
 import { ListTodo, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useMemo, useEffect } from "react";
 import { TeamCompositionWidget } from "./team-composition-widget";
+import { PlayerSlot } from "./player-slot";
 import type { MatchmakingGroupUpdateRequest, PlayerSlotDto } from "@/types/api";
 
 // ============================================================================
@@ -48,17 +49,48 @@ export function QueueControl() {
   const enqueueMutation = useEnqueuePlayer();
   const dequeueMutation = useDequeuePlayer();
   const updateMutation = useUpdateMatchmakingGroup();
-  const [availabilityByPlayerId, setAvailabilityForPlayer] = usePlayerAvailability(players);
+
+  // Mapping group-centric : playerId → GroupViewModel (read-only backend data)
+  const groupByPlayerId = useGroupByPlayerId();
+
+  // State draft/dirty par groupe (pattern "server state + draft state")
+  const [editStateByGroupId, setEditStateByGroupId] = useState<Record<string, GroupEditState>>({});
+
+  // Calculer les IDs des joueurs dont le groupe est dirty ou awaitingAck
+  const dirtyPlayerIds = useMemo(() => {
+    const ids = new Set<string>();
+
+    for (const [groupId, state] of Object.entries(editStateByGroupId)) {
+      if (state.dirty || state.awaitingAck) {
+        // Trouver les joueurs de ce groupe via queueGroups
+        const group = queueGroups?.find((g) => g.publicId === groupId);
+        group?.players.forEach((p) => ids.add(p.playerPublicId));
+      }
+    }
+
+    return ids;
+  }, [editStateByGroupId, queueGroups]);
+
+  // Hook availability avec sync backend (groupVM) si pas dirty
+  const [availabilityByPlayerId, setAvailabilityForPlayer] = usePlayerAvailability(
+    players,
+    groupByPlayerId,
+    dirtyPlayerIds
+  );
+
+  // Hook composition (inchangé - uniquement pour pré-enqueue)
   const [compositionByPlayerId, setCompositionForPlayer] = usePlayerTeamComposition(players);
   const playersInCompositions = usePlayersInCompositions(compositionByPlayerId);
 
-  // ============================================================================
-  // State draft/dirty par groupe (pattern "server state + draft state")
-  // ============================================================================
-  const [editStateByGroupId, setEditStateByGroupId] = useState<Record<string, GroupEditState>>({});
-
   // State pour la tolérance pré-inscription (joueurs non encore en queue)
   const [preEnqueueTolByPlayerId, setPreEnqueueTolByPlayerId] = useState<Record<string, number>>({});
+
+  // Helper pour comparer les dates de manière robuste (normalise en timestamp)
+  const datesMatch = (a: string | undefined, b: string): boolean => {
+    if (!a && !b) return true;
+    if (!a || !b) return false;
+    return Date.parse(a) === Date.parse(b);
+  };
 
   // Sync polling → draft (seulement si pas dirty ET pas awaitingAck)
   useEffect(() => {
@@ -74,10 +106,11 @@ export function QueueControl() {
         if (existing?.dirty || existing?.awaitingAck) {
           // Vérifier si le backend a bien reflété nos changements (pour clear awaitingAck)
           if (existing.awaitingAck) {
+            // Comparer les dates avec normalisation (évite les problèmes de format ISO)
             const backendMatches =
               group.teammateTol === existing.draft.teammateTol &&
-              group.timeWindowStart === existing.draft.timeWindowStart &&
-              group.timeWindowEnd === existing.draft.timeWindowEnd;
+              datesMatch(group.timeWindowStart, existing.draft.timeWindowStart) &&
+              datesMatch(group.timeWindowEnd, existing.draft.timeWindowEnd);
 
             if (backendMatches) {
               // Backend synced → on peut clear awaitingAck et sync
@@ -172,6 +205,12 @@ export function QueueControl() {
     return players?.filter((p) => p.isEnqueued).map((p) => p.publicId) || [];
   }, [players]);
 
+  // Map pour lookup O(1) des joueurs par ID (utilisé dans le rendu read-only de la composition)
+  const playerById = useMemo(
+    () => new Map(players?.map((p) => [p.publicId, p]) ?? []),
+    [players]
+  );
+
   const handleEnqueue = (playerId: string) => {
     const teammateTol = preEnqueueTolByPlayerId[playerId] ?? 0.5;
     enqueueMutation.mutate({ playerId, teammateTol });
@@ -194,13 +233,30 @@ export function QueueControl() {
     const newStart = field === "start" ? value : current.start;
     const newEnd = field === "end" ? value : current.end;
 
+    // Mettre à jour le state local
     setAvailabilityForPlayer(playerId, { start: newStart, end: newEnd });
+
+    // Si joueur enqueued → marquer le groupe comme dirty + update draft
+    const player = players?.find((p) => p.publicId === playerId);
+    if (player?.isEnqueued && player.enqueuedGroupPublicId) {
+      const groupId = player.enqueuedGroupPublicId;
+      // Update le draft avec les nouvelles valeurs (conversion ISO UTC)
+      updateDraft(groupId, "timeWindowStart", new Date(newStart).toISOString());
+      updateDraft(groupId, "timeWindowEnd", new Date(newEnd).toISOString());
+    }
   };
 
-  // Helper pour afficher la tolérance
+  // Helper pour afficher la tolérance (avec fallback sur groupVM si draft pas encore initialisé)
   const getDisplayTolerance = (player: PlayerWithUIState): number => {
     if (player.isEnqueued && player.enqueuedGroupPublicId) {
-      return editStateByGroupId[player.enqueuedGroupPublicId]?.draft.teammateTol ?? 0.5;
+      // Priorité: draft local → sinon fallback groupVM (backend)
+      const editState = editStateByGroupId[player.enqueuedGroupPublicId];
+      if (editState) {
+        return editState.draft.teammateTol;
+      }
+      // Fallback: lire depuis groupVM si draft pas encore initialisé
+      const groupVM = groupByPlayerId.get(player.publicId);
+      return groupVM?.teammateTol ?? 0.5;
     }
     return preEnqueueTolByPlayerId[player.publicId] ?? 0.5;
   };
@@ -331,8 +387,12 @@ export function QueueControl() {
                     const isOwner = !!playerComposition && playerComposition.some((id) => id !== null);
                     const isInAnyComposition = !!playersInCompositions[player.publicId];
 
-                    // Le joueur est coéquipier uniquement s'il est dans une compo mais n'est pas owner
-                    const isCoTeammateOnly = isInAnyComposition && !isOwner;
+                    // Coéquipier backend : dans un groupe mais pas owner
+                    const groupVM = groupByPlayerId.get(player.publicId);
+                    const isBackendCoequipier = !!groupVM && groupVM.ownerPublicId !== player.publicId;
+
+                    // Le joueur est coéquipier (local pré-enqueue OU backend)
+                    const isCoTeammateOnly = (isInAnyComposition && !isOwner) || isBackendCoequipier;
 
                     // Peut éditer le widget si :
                     // - pas dans une compo (peut en créer une)
@@ -342,7 +402,7 @@ export function QueueControl() {
                     return (
                       <TableRow
                         key={player.publicId}
-                        className={isCoTeammateOnly ? "opacity-50 bg-gray-50" : ""}
+                        className={isCoTeammateOnly ? "opacity-50 bg-gray-50 pointer-events-none" : ""}
                       >
                         <TableCell className="font-medium">
                           {player.displayName}
@@ -373,17 +433,49 @@ export function QueueControl() {
                           })()}
                         </TableCell>
                         <TableCell>
-                          <TeamCompositionWidget
-                            currentPlayer={player}
-                            teamComposition={compositionByPlayerId[player.publicId] || [null, null, null]}
-                            allPlayers={players}
-                            enqueuedPlayerIds={enqueuedPlayerIds}
-                            playersInCompositions={playersInCompositions}
-                            canEditGroup={canEditGroup}
-                            onUpdate={(composition) =>
-                              setCompositionForPlayer(player.publicId, composition)
+                          {(() => {
+                            const groupVM = groupByPlayerId.get(player.publicId);
+
+                            if (groupVM) {
+                              // Joueur ENQUEUED → réutiliser PlayerSlot read-only avec même layout
+                              const slotAPlayer = playerById.get(groupVM.composition.slotA ?? "");
+                              const slotBPlayer = playerById.get(groupVM.composition.slotB ?? "");
+                              const slotCPlayer = playerById.get(groupVM.composition.slotC ?? "");
+                              const slotDPlayer = playerById.get(groupVM.composition.slotD ?? "");
+
+                              return (
+                                <div className="flex items-center gap-2">
+                                  {/* Équipe 1 */}
+                                  <div className="flex items-center gap-2">
+                                    <PlayerSlot player={slotAPlayer} canRemove={false} canAdd={false} />
+                                    <PlayerSlot player={slotBPlayer} canRemove={false} canAdd={false} />
+                                  </div>
+                                  {/* Séparateur */}
+                                  <div className="w-px h-12 bg-gray-300 mx-1" />
+                                  {/* Équipe 2 */}
+                                  <div className="flex items-center gap-2">
+                                    <PlayerSlot player={slotCPlayer} canRemove={false} canAdd={false} />
+                                    <PlayerSlot player={slotDPlayer} canRemove={false} canAdd={false} />
+                                  </div>
+                                </div>
+                              );
                             }
-                          />
+
+                            // Joueur NON-ENQUEUED → state local, éditable
+                            return (
+                              <TeamCompositionWidget
+                                currentPlayer={player}
+                                teamComposition={compositionByPlayerId[player.publicId] || [null, null, null]}
+                                allPlayers={players}
+                                enqueuedPlayerIds={enqueuedPlayerIds}
+                                playersInCompositions={playersInCompositions}
+                                canEditGroup={canEditGroup}
+                                onUpdate={(composition) =>
+                                  setCompositionForPlayer(player.publicId, composition)
+                                }
+                              />
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -419,7 +511,7 @@ export function QueueControl() {
                             </span>
                           )}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className={`text-right ${isCoTeammateOnly ? "pointer-events-auto" : ""}`}>
                           {player.isEnqueued ? (
                             <div className="flex gap-2 justify-end">
                               <Button
