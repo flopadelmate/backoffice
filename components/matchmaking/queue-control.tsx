@@ -394,6 +394,7 @@ export function QueueControl() {
                               }
                               minDate={minStartDate}
                               label="Début"
+                              variant="start"
                             />
                             <DateTimePicker
                               value={availability?.end || null}
@@ -403,6 +404,7 @@ export function QueueControl() {
                               minDate={minEndDate}
                               label="Fin"
                               disabled={!availability?.start}
+                              variant="end"
                             />
                           </div>
                         </TableCell>
