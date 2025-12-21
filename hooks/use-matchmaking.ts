@@ -667,7 +667,7 @@ export function useRunMatchmaking() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ scheduledTime }: { scheduledTime: string }) => {
+    mutationFn: async ({ scheduledTime, dryRun }: { scheduledTime: string; dryRun?: boolean }) => {
       // Convert scheduledTime (HH:mm format) to ISO date-time format
       const today = new Date();
       const [hours, minutes] = scheduledTime.split(":");
@@ -677,7 +677,7 @@ export function useRunMatchmaking() {
       // Appel API réel
       // Le backend retourne pour l'instant MatchmakingRunResponse { matchCount, executionTime }
       // Plus tard, il retournera MatchmakingReport complet (avec phases, summary, etc.)
-      const response = await apiClient.runMatchmaking({ executionTime });
+      const response = await apiClient.runMatchmaking({ executionTime, dryRun });
 
       return response;
     },

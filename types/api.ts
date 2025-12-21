@@ -140,6 +140,7 @@ export interface CreateTestPlayerRequest {
 
 export interface MatchmakingRunRequest {
   executionTime: string; // ISO date-time format (e.g., "2024-12-12T14:30:00")
+  dryRun?: boolean; // Optional: if true, runs in dry-run mode (no DB changes)
 }
 
 export interface MatchmakingRunResponse {

@@ -35,13 +35,13 @@ export function AlgoRunner() {
 
   const enqueuedPlayers = players?.filter((p) => p.isEnqueued) || [];
 
-  const handleRun = () => {
+  const handleRun = (dryRun: boolean) => {
     if (enqueuedPlayers.length === 0) {
       alert("Aucun joueur en file. Inscrivez d'abord des joueurs.");
       return;
     }
 
-    runMutation.mutate({ scheduledTime });
+    runMutation.mutate({ scheduledTime, dryRun });
   };
 
   return (
@@ -76,23 +76,43 @@ export function AlgoRunner() {
                 className="w-32"
               />
             </div>
-            <Button
-              onClick={handleRun}
-              disabled={runMutation.isPending}
-              size="lg"
-            >
-              {runMutation.isPending ? (
-                <>
-                  <Clock className="mr-2 h-4 w-4 animate-spin" />
-                  En cours...
-                </>
-              ) : (
-                <>
-                  <Play className="mr-2 h-4 w-4" />
-                  Lancer le matchmaking
-                </>
-              )}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => handleRun(true)}
+                disabled={runMutation.isPending}
+                size="lg"
+                variant="outline"
+              >
+                {runMutation.isPending ? (
+                  <>
+                    <Clock className="mr-2 h-4 w-4 animate-spin" />
+                    En cours...
+                  </>
+                ) : (
+                  <>
+                    <Play className="mr-2 h-4 w-4" />
+                    Dry Run
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => handleRun(false)}
+                disabled={runMutation.isPending}
+                size="lg"
+              >
+                {runMutation.isPending ? (
+                  <>
+                    <Clock className="mr-2 h-4 w-4 animate-spin" />
+                    En cours...
+                  </>
+                ) : (
+                  <>
+                    <Play className="mr-2 h-4 w-4" />
+                    Lancer le matchmaking
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
 
