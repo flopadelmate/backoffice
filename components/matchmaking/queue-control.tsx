@@ -64,7 +64,9 @@ export function QueueControl() {
       if (state.dirty || state.awaitingAck) {
         // Trouver les joueurs de ce groupe via queueGroups
         const group = queueGroups?.find((g) => g.publicId === groupId);
-        group?.players.forEach((p) => ids.add(p.playerPublicId));
+        [group?.slotA, group?.slotB, group?.slotC, group?.slotD].forEach((slot) => {
+          if (slot) ids.add(slot.playerPublicId);
+        });
       }
     }
 
@@ -291,13 +293,10 @@ export function QueueControl() {
 
     // Construire les slots depuis le groupe server (typés correctement)
     const slots: Pick<MatchmakingGroupUpdateRequest, "slotA" | "slotB" | "slotC" | "slotD"> = {};
-    serverGroup.players.forEach((p) => {
-      const slotDto: PlayerSlotDto = { playerPublicId: p.playerPublicId };
-      if (p.slot === "A") slots.slotA = slotDto;
-      else if (p.slot === "B") slots.slotB = slotDto;
-      else if (p.slot === "C") slots.slotC = slotDto;
-      else if (p.slot === "D") slots.slotD = slotDto;
-    });
+    if (serverGroup.slotA) slots.slotA = { playerPublicId: serverGroup.slotA.playerPublicId };
+    if (serverGroup.slotB) slots.slotB = { playerPublicId: serverGroup.slotB.playerPublicId };
+    if (serverGroup.slotC) slots.slotC = { playerPublicId: serverGroup.slotC.playerPublicId };
+    if (serverGroup.slotD) slots.slotD = { playerPublicId: serverGroup.slotD.playerPublicId };
 
     updateMutation.mutate(
       {

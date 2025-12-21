@@ -225,7 +225,10 @@ export interface MatchmakingGroupResponseDto {
   timeWindowStart?: string;
   timeWindowEnd?: string;
   clubPublicIds?: string[];
-  players: PlayerSlotResponseDto[];
+  slotA?: PlayerSlotResponseDto;
+  slotB?: PlayerSlotResponseDto;
+  slotC?: PlayerSlotResponseDto;
+  slotD?: PlayerSlotResponseDto;
   createdAt: string;
   reservedSlot?: {
     clubPublicId: string;

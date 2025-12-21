@@ -65,10 +65,10 @@ function buildGroupByPlayerId(
   const map = new Map<string, GroupViewModel>();
 
   for (const group of queueGroups) {
-    const slotA = group.players.find((p) => p.slot === "A");
-    const slotB = group.players.find((p) => p.slot === "B");
-    const slotC = group.players.find((p) => p.slot === "C");
-    const slotD = group.players.find((p) => p.slot === "D");
+    const slotA = group.slotA;
+    const slotB = group.slotB;
+    const slotC = group.slotC;
+    const slotD = group.slotD;
 
     const viewModel: GroupViewModel = Object.freeze({
       groupPublicId: group.publicId,
@@ -86,9 +86,9 @@ function buildGroupByPlayerId(
     });
 
     // Tous les joueurs du groupe pointent vers le même ViewModel
-    for (const playerSlot of group.players) {
-      map.set(playerSlot.playerPublicId, viewModel);
-    }
+    [slotA, slotB, slotC, slotD].forEach((slot) => {
+      if (slot) map.set(slot.playerPublicId, viewModel);
+    });
   }
 
   return map;
@@ -116,7 +116,9 @@ function buildEnqueuedPlayerSet(
 ): Set<string> {
   const set = new Set<string>();
   queueGroups.forEach((g) => {
-    g.players.forEach((p) => set.add(p.playerPublicId));
+    [g.slotA, g.slotB, g.slotC, g.slotD].forEach((slot) => {
+      if (slot) set.add(slot.playerPublicId);
+    });
   });
   return set;
 }
@@ -126,14 +128,15 @@ function buildPlayerToGroupMap(
 ): Map<string, string> {
   const map = new Map<string, string>();
   queueGroups.forEach((g) => {
-    g.players.forEach((p) => {
-      if (map.has(p.playerPublicId)) {
+    [g.slotA, g.slotB, g.slotC, g.slotD].forEach((slot) => {
+      if (!slot) return;
+      if (map.has(slot.playerPublicId)) {
         console.warn(
-          `Player ${p.playerPublicId} appears in multiple groups (status: ${g.status}). Using first occurrence.`
+          `Player ${slot.playerPublicId} appears in multiple groups (status: ${g.status}). Using first occurrence.`
         );
         return;
       }
-      map.set(p.playerPublicId, g.publicId);
+      map.set(slot.playerPublicId, g.publicId);
     });
   });
   return map;
