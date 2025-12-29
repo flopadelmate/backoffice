@@ -8,6 +8,7 @@ import {
   Building2,
   BarChart3,
   FlaskConical,
+  Wand2,
 } from "lucide-react";
 
 const navigation = [
@@ -30,6 +31,11 @@ const navigation = [
     name: "Matchmaking Lab",
     href: "/admin/matchmaking/lab",
     icon: FlaskConical,
+  },
+  {
+    name: "PMR Wizard",
+    href: "/admin/pmr-wizard",
+    icon: Wand2,
   },
 ];
 
