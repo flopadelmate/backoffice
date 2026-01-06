@@ -1,10 +1,9 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useClub, useUpdateClub } from "@/hooks/use-clubs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, X } from "lucide-react";
-import Link from "next/link";
 import { ClubHeader } from "./club-header";
 import { ClubInfoContact } from "./club-info-contact";
 import { ClubExploitation } from "./club-exploitation";
@@ -18,6 +17,7 @@ import { cn } from "@/lib/utils";
 
 export default function ClubDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const clubId = parseInt(params.id as string, 10);
   const { toast } = useToast();
 
@@ -93,6 +93,16 @@ export default function ClubDetailPage() {
     setGeoIsInvalid(false); // Reset validation state
   };
 
+  // Back handler: use router.back() to preserve filters
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      // Fallback if no history (direct URL access)
+      router.replace("/admin/clubs");
+    }
+  };
+
   // Common input style
   const EDITABLE_INPUT_CLASS = cn(
     "border border-gray-200",
@@ -114,12 +124,10 @@ export default function ClubDetailPage() {
     return (
       <div className="text-center py-8">
         <p className="text-red-600">Club introuvable</p>
-        <Link href="/admin/clubs">
-          <Button variant="outline" className="mt-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour à la liste
-          </Button>
-        </Link>
+        <Button variant="outline" className="mt-4" onClick={handleBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Retour à la liste
+        </Button>
       </div>
     );
   }
@@ -128,12 +136,10 @@ export default function ClubDetailPage() {
     <div className="space-y-6 pb-24">
       {/* Back button */}
       <div>
-        <Link href="/admin/clubs">
-          <Button variant="ghost" size="sm" className="mb-2">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour à la liste
-          </Button>
-        </Link>
+        <Button variant="ghost" size="sm" className="mb-2" onClick={handleBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Retour à la liste
+        </Button>
         <h1 className="text-3xl font-bold text-gray-900">{club.name}</h1>
         <p className="text-gray-600 mt-1">
           Gestion et modification des informations du club
@@ -186,11 +192,7 @@ export default function ClubDetailPage() {
         onGeoValidationChange={setGeoIsInvalid}
       />
 
-      <ClubExploitation
-        draft={draft}
-        onUpdate={updateDraft}
-        inputClassName={EDITABLE_INPUT_CLASS}
-      />
+      <ClubExploitation draft={draft} />
 
       <ClubCourts draft={draft} />
 

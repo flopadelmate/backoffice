@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useClubs } from "@/hooks/use-clubs";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,8 +48,110 @@ function formatReservationSystem(system: string | undefined): string {
 type SortField = "name" | "favoriteCount" | "matchCount" | "lastAdminUpdateAt" | "lastScrapedAt";
 type SortDirection = "asc" | "desc";
 
+// Utility: Parse URL params with robust validation
+function parseUrlParams(searchParams: URLSearchParams) {
+  // Parse page (int, clamp >= 0, default: 0)
+  const pageParam = searchParams.get("page");
+  const parsedPage = pageParam ? parseInt(pageParam, 10) : 0;
+  const page = !isNaN(parsedPage) && parsedPage >= 0 ? parsedPage : 0;
+
+  // Parse size (int, whitelist {20, 50, 100}, default: 20)
+  const sizeParam = searchParams.get("size");
+  const parsedSize = sizeParam ? parseInt(sizeParam, 10) : 20;
+  const validSizes = [20, 50, 100];
+  const size = validSizes.includes(parsedSize) ? parsedSize : 20;
+
+  // Parse sortBy (validate enum, default: "name")
+  const validSortFields: SortField[] = ["name", "favoriteCount", "matchCount", "lastAdminUpdateAt", "lastScrapedAt"];
+  const sortByParam = searchParams.get("sortBy");
+  const sortBy = sortByParam && validSortFields.includes(sortByParam as SortField)
+    ? (sortByParam as SortField)
+    : "name";
+
+  // Parse sortDir (validate, default: "asc")
+  const sortDirParam = searchParams.get("sortDir");
+  const sortDir: SortDirection = sortDirParam === "desc" ? "desc" : "asc";
+
+  // Parse name (string | undefined)
+  const name = searchParams.get("name") || undefined;
+
+  // Parse department (string | undefined)
+  const department = searchParams.get("department") || undefined;
+
+  // Parse verified (boolean | undefined) - strict parsing
+  const verifiedParam = searchParams.get("verified");
+  const verified = verifiedParam === "true" ? true
+    : verifiedParam === "false" ? false
+    : undefined;
+
+  // Parse reservationSystem (validate enum | undefined)
+  const rsParam = searchParams.get("reservationSystem");
+  const validRS: ReservationSystem[] = ["GESTION_SPORTS", "DOIN_SPORT", "TENUP"];
+  const reservationSystem = rsParam && validRS.includes(rsParam as ReservationSystem)
+    ? (rsParam as ReservationSystem)
+    : undefined;
+
+  return {
+    page,
+    size,
+    sortBy,
+    sortDir,
+    name,
+    department,
+    verified,
+    reservationSystem,
+  };
+}
+
+// Utility: Build URL query string from params
+function buildUrlString(params: {
+  page: number;
+  size: number;
+  sortBy: SortField;
+  sortDir: SortDirection;
+  name?: string;
+  department?: string;
+  verified?: boolean;
+  reservationSystem?: ReservationSystem;
+}): string {
+  const searchParams = new URLSearchParams();
+
+  // Omit defaults to keep URL clean
+  if (params.page !== 0) {
+    searchParams.set("page", params.page.toString());
+  }
+  if (params.size !== 20) {
+    searchParams.set("size", params.size.toString());
+  }
+  if (params.sortBy !== "name") {
+    searchParams.set("sortBy", params.sortBy);
+  }
+  if (params.sortDir !== "asc") {
+    searchParams.set("sortDir", params.sortDir);
+  }
+
+  // Add filters if present
+  if (params.name) {
+    searchParams.set("name", params.name);
+  }
+  if (params.department) {
+    searchParams.set("department", params.department);
+  }
+  if (params.verified !== undefined) {
+    searchParams.set("verified", params.verified.toString());
+  }
+  if (params.reservationSystem) {
+    searchParams.set("reservationSystem", params.reservationSystem);
+  }
+
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
+}
+
 export default function ClubsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isFirstMount = useRef(true);
 
   // Pagination state (0-indexed for backend API)
   const [currentPage, setCurrentPage] = useState(0);
@@ -87,24 +189,114 @@ export default function ClubsPage() {
   const totalPages = data?.totalPages ?? 0;
   const totalElements = data?.totalElements ?? 0;
 
+  // Sync state from URL (on mount and back/forward)
+  useEffect(() => {
+    const parsed = parseUrlParams(searchParams);
+
+    // Always sync pagination, sort, and applied filters
+    setCurrentPage(parsed.page);
+    setPageSize(parsed.size);
+    setSortBy(parsed.sortBy);
+    setSortDir(parsed.sortDir);
+    setAppliedName(parsed.name);
+    setAppliedDepartment(parsed.department);
+    setAppliedReservationSystem(parsed.reservationSystem);
+    setAppliedVerified(parsed.verified);
+
+    // Sync input states only on first mount to avoid flicker
+    if (isFirstMount.current) {
+      setNameInput(parsed.name || "");
+      setDepartmentInput(parsed.department || "");
+      setReservationSystemInput(parsed.reservationSystem || "all");
+      setVerifiedInput(
+        parsed.verified === undefined ? "all" : parsed.verified.toString()
+      );
+      isFirstMount.current = false;
+    }
+  }, [searchParams.toString()]);
+
+  // Update URL with router.replace (no history entry)
+  const replaceUrl = (params: {
+    page: number;
+    size: number;
+    sortBy: SortField;
+    sortDir: SortDirection;
+    name?: string;
+    department?: string;
+    verified?: boolean;
+    reservationSystem?: ReservationSystem;
+  }) => {
+    const queryString = buildUrlString(params);
+    router.replace(`/admin/clubs${queryString}`, { scroll: false });
+  };
+
+  // Update URL with router.push (create history entry)
+  const pushUrl = (params: {
+    page: number;
+    size: number;
+    sortBy: SortField;
+    sortDir: SortDirection;
+    name?: string;
+    department?: string;
+    verified?: boolean;
+    reservationSystem?: ReservationSystem;
+  }) => {
+    const queryString = buildUrlString(params);
+    router.push(`/admin/clubs${queryString}`, { scroll: false });
+  };
+
   // Handler: Apply filters
   const handleApplyFilters = () => {
-    // Reset to page 0 when applying filters
-    setCurrentPage(0);
+    // Calculate next state
+    const nextName = nameInput.trim() || undefined;
+    const nextDepartment = departmentInput.trim() || undefined;
+    const nextReservationSystem = reservationSystemInput === "all"
+      ? undefined
+      : (reservationSystemInput as ReservationSystem);
+    const nextVerified = verifiedInput === "all"
+      ? undefined
+      : verifiedInput === "true";
 
-    // Apply filters
-    setAppliedName(nameInput.trim() || undefined);
-    setAppliedDepartment(departmentInput.trim() || undefined);
-    setAppliedReservationSystem(
-      reservationSystemInput === "all" ? undefined : (reservationSystemInput as ReservationSystem)
-    );
-    setAppliedVerified(
-      verifiedInput === "all" ? undefined : verifiedInput === "true"
-    );
+    const nextParams = {
+      page: 0, // Reset to first page
+      size: pageSize,
+      sortBy,
+      sortDir,
+      name: nextName,
+      department: nextDepartment,
+      reservationSystem: nextReservationSystem,
+      verified: nextVerified,
+    };
+
+    // 1. Update URL with replace (no history pollution)
+    replaceUrl(nextParams);
+
+    // 2. Update states (will be overridden by useEffect but prevents flicker)
+    setCurrentPage(0);
+    setAppliedName(nextName);
+    setAppliedDepartment(nextDepartment);
+    setAppliedReservationSystem(nextReservationSystem);
+    setAppliedVerified(nextVerified);
   };
 
   // Handler: Reset filters
   const handleResetFilters = () => {
+    const nextParams = {
+      page: 0,
+      size: pageSize,
+      sortBy,
+      sortDir,
+      name: undefined,
+      department: undefined,
+      reservationSystem: undefined,
+      verified: undefined,
+    };
+
+    // 1. Update URL with replace (clean URL)
+    replaceUrl(nextParams);
+
+    // 2. Update states
+    setCurrentPage(0);
     setNameInput("");
     setDepartmentInput("");
     setReservationSystemInput("all");
@@ -113,26 +305,79 @@ export default function ClubsPage() {
     setAppliedDepartment(undefined);
     setAppliedReservationSystem(undefined);
     setAppliedVerified(undefined);
-    setCurrentPage(0);
   };
 
   // Handler: Toggle sort on column
   const handleSort = (field: SortField) => {
+    // Calculate next sort state
+    let nextSortBy = field;
+    let nextSortDir: SortDirection = "asc";
+
     if (sortBy === field) {
-      // Toggle direction
-      setSortDir(sortDir === "asc" ? "desc" : "asc");
-    } else {
-      // New column, default to ascending
-      setSortBy(field);
-      setSortDir("asc");
+      nextSortDir = sortDir === "asc" ? "desc" : "asc";
     }
-    setCurrentPage(0); // Reset to first page on sort change
+
+    const nextParams = {
+      page: 0, // Reset to first page
+      size: pageSize,
+      sortBy: nextSortBy,
+      sortDir: nextSortDir,
+      name: appliedName,
+      department: appliedDepartment,
+      reservationSystem: appliedReservationSystem,
+      verified: appliedVerified,
+    };
+
+    // 1. Update URL with replace
+    replaceUrl(nextParams);
+
+    // 2. Update states
+    setCurrentPage(0);
+    setSortBy(nextSortBy);
+    setSortDir(nextSortDir);
   };
 
   // Handler: Change page size
   const handlePageSizeChange = (value: string) => {
-    setPageSize(Number(value));
-    setCurrentPage(0); // Reset to first page
+    const nextSize = Number(value);
+
+    const nextParams = {
+      page: 0, // Reset to first page
+      size: nextSize,
+      sortBy,
+      sortDir,
+      name: appliedName,
+      department: appliedDepartment,
+      reservationSystem: appliedReservationSystem,
+      verified: appliedVerified,
+    };
+
+    // 1. Update URL with replace (no need for history)
+    replaceUrl(nextParams);
+
+    // 2. Update states
+    setCurrentPage(0);
+    setPageSize(nextSize);
+  };
+
+  // Handler: Change page (for pagination buttons)
+  const handlePageChange = (newPage: number) => {
+    const nextParams = {
+      page: newPage,
+      size: pageSize,
+      sortBy,
+      sortDir,
+      name: appliedName,
+      department: appliedDepartment,
+      reservationSystem: appliedReservationSystem,
+      verified: appliedVerified,
+    };
+
+    // 1. Update URL with PUSH (create history entry for back/forward)
+    pushUrl(nextParams);
+
+    // 2. Update state
+    setCurrentPage(newPage);
   };
 
   // Handler: Enter key on input fields
@@ -406,7 +651,7 @@ export default function ClubsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                      onClick={() => handlePageChange(Math.max(0, currentPage - 1))}
                       disabled={currentPage === 0}
                     >
                       Précédent
@@ -414,7 +659,7 @@ export default function ClubsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                      onClick={() => handlePageChange(Math.min(totalPages - 1, currentPage + 1))}
                       disabled={currentPage === totalPages - 1}
                     >
                       Suivant

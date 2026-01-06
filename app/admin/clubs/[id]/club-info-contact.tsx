@@ -74,7 +74,7 @@ export function ClubInfoContact({
             <Input
               id="phone"
               type="tel"
-              value={draft.phone}
+              value={draft.phone || ""}
               onChange={(e) => onUpdate({ phone: e.target.value })}
               className={inputClassName}
               placeholder="Ex: 01 23 45 67 89"
@@ -101,7 +101,7 @@ export function ClubInfoContact({
             <Label htmlFor="street">Rue</Label>
             <Input
               id="street"
-              value={draft.address.street}
+              value={draft.address.street || ""}
               onChange={(e) =>
                 onUpdate({
                   address: {
@@ -118,7 +118,7 @@ export function ClubInfoContact({
             <Label htmlFor="zipCode">Code postal</Label>
             <Input
               id="zipCode"
-              value={draft.address.zipCode}
+              value={draft.address.zipCode || ""}
               onChange={(e) =>
                 onUpdate({
                   address: {
@@ -137,7 +137,7 @@ export function ClubInfoContact({
             <Label htmlFor="city">Ville</Label>
             <Input
               id="city"
-              value={draft.address.city}
+              value={draft.address.city || ""}
               onChange={(e) =>
                 onUpdate({
                   address: {

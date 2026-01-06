@@ -76,27 +76,43 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
             </div>
           </div>
 
-          {/* ReservationSystem - Select always active with "NONE" ↔ undefined mapping */}
-          <div>
-            <Label htmlFor="reservationSystem">Système de réservation</Label>
-            <Select
-              value={draft.reservationSystem ?? "NONE"}
-              onValueChange={(value) =>
-                onUpdate({
-                  reservationSystem: value === "NONE" ? undefined : (value as ReservationSystem),
-                })
-              }
-            >
-              <SelectTrigger id="reservationSystem" className={inputClassName}>
-                <SelectValue placeholder="Aucun" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="NONE">Aucun</SelectItem>
-                <SelectItem value="GESTION_SPORTS">Gestion Sports</SelectItem>
-                <SelectItem value="DOIN_SPORT">Doin Sport</SelectItem>
-                <SelectItem value="TENUP">TenUp</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* ReservationUrl + ReservationSystem */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* ReservationUrl - Input direct */}
+            <div>
+              <Label htmlFor="reservationUrl">URL de réservation</Label>
+              <Input
+                id="reservationUrl"
+                type="url"
+                value={draft.reservationUrl || ""}
+                onChange={(e) => onUpdate({ reservationUrl: e.target.value })}
+                className={inputClassName}
+                placeholder="https://..."
+              />
+            </div>
+
+            {/* ReservationSystem - Select always active with "NONE" ↔ undefined mapping */}
+            <div>
+              <Label htmlFor="reservationSystem">Système de réservation</Label>
+              <Select
+                value={draft.reservationSystem ?? "NONE"}
+                onValueChange={(value) =>
+                  onUpdate({
+                    reservationSystem: value === "NONE" ? undefined : (value as ReservationSystem),
+                  })
+                }
+              >
+                <SelectTrigger id="reservationSystem" className={inputClassName}>
+                  <SelectValue placeholder="Aucun" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NONE">Aucun</SelectItem>
+                  <SelectItem value="GESTION_SPORTS">Gestion Sports</SelectItem>
+                  <SelectItem value="DOIN_SPORT">Doin Sport</SelectItem>
+                  <SelectItem value="TENUP">TenUp</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
@@ -107,10 +123,18 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
             <div>
               <p className="text-xs text-gray-600">Note Google</p>
               <p className="text-sm font-semibold">
-                {draft.googleRating}/5
-                <span className="text-xs text-gray-500 ml-1">
-                  ({draft.googleReviewCount} avis)
-                </span>
+                {draft.googleRating != null ? (
+                  <>
+                    {draft.googleRating.toFixed(1)}/5
+                    {draft.googleReviewCount != null && draft.googleReviewCount > 0 && (
+                      <span className="text-xs text-gray-500 ml-1">
+                        ({draft.googleReviewCount} avis)
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-gray-400 text-xs">Non renseigné</span>
+                )}
               </p>
             </div>
           </div>
