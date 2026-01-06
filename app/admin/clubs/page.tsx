@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useClubs } from "@/hooks/use-clubs";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ArrowUpDown, ArrowUp, ArrowDown, Filter, X } from "lucide-react";
+import type { ReservationSystem } from "@/types/api";
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString("fr-FR", {
@@ -36,22 +45,104 @@ function formatReservationSystem(system: string | undefined): string {
   return mapping[system] || system;
 }
 
+type SortField = "name" | "favoriteCount" | "matchCount" | "lastAdminUpdateAt" | "lastScrapedAt";
+type SortDirection = "asc" | "desc";
+
 export default function ClubsPage() {
-  // Page is 0-indexed for backend API
+  const router = useRouter();
+
+  // Pagination state (0-indexed for backend API)
   const [currentPage, setCurrentPage] = useState(0);
-  const pageSize = 20; // Backend default
+  const [pageSize, setPageSize] = useState(20);
+
+  // Sort state
+  const [sortBy, setSortBy] = useState<SortField>("name");
+  const [sortDir, setSortDir] = useState<SortDirection>("asc");
+
+  // Filter state (not applied until "Appliquer" is clicked)
+  const [departmentInput, setDepartmentInput] = useState("");
+  const [reservationSystemInput, setReservationSystemInput] = useState<string>("all");
+  const [verifiedInput, setVerifiedInput] = useState<string>("all");
+
+  // Applied filters (these are sent to the API)
+  const [appliedDepartment, setAppliedDepartment] = useState<string | undefined>();
+  const [appliedReservationSystem, setAppliedReservationSystem] = useState<ReservationSystem | undefined>();
+  const [appliedVerified, setAppliedVerified] = useState<boolean | undefined>();
 
   const { data, isLoading, isError } = useClubs({
     page: currentPage,
     size: pageSize,
-    sortBy: "name",
-    sortDir: "asc",
+    sortBy,
+    sortDir,
+    department: appliedDepartment,
+    reservationSystem: appliedReservationSystem,
+    verified: appliedVerified,
   });
 
   // Extract data from Spring Page structure
   const clubs = data?.content ?? [];
   const totalPages = data?.totalPages ?? 0;
   const totalElements = data?.totalElements ?? 0;
+
+  // Handler: Apply filters
+  const handleApplyFilters = () => {
+    // Reset to page 0 when applying filters
+    setCurrentPage(0);
+
+    // Apply filters
+    setAppliedDepartment(departmentInput.trim() || undefined);
+    setAppliedReservationSystem(
+      reservationSystemInput === "all" ? undefined : (reservationSystemInput as ReservationSystem)
+    );
+    setAppliedVerified(
+      verifiedInput === "all" ? undefined : verifiedInput === "true"
+    );
+  };
+
+  // Handler: Reset filters
+  const handleResetFilters = () => {
+    setDepartmentInput("");
+    setReservationSystemInput("all");
+    setVerifiedInput("all");
+    setAppliedDepartment(undefined);
+    setAppliedReservationSystem(undefined);
+    setAppliedVerified(undefined);
+    setCurrentPage(0);
+  };
+
+  // Handler: Toggle sort on column
+  const handleSort = (field: SortField) => {
+    if (sortBy === field) {
+      // Toggle direction
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
+    } else {
+      // New column, default to ascending
+      setSortBy(field);
+      setSortDir("asc");
+    }
+    setCurrentPage(0); // Reset to first page on sort change
+  };
+
+  // Handler: Change page size
+  const handlePageSizeChange = (value: string) => {
+    setPageSize(Number(value));
+    setCurrentPage(0); // Reset to first page
+  };
+
+  // Check if any filter is active
+  const hasActiveFilters = appliedDepartment || appliedReservationSystem || appliedVerified !== undefined;
+
+  // Render sort icon
+  const renderSortIcon = (field: SortField) => {
+    if (sortBy !== field) {
+      return <ArrowUpDown className="h-4 w-4 ml-1 text-gray-400" />;
+    }
+    return sortDir === "asc" ? (
+      <ArrowUp className="h-4 w-4 ml-1 text-gray-900" />
+    ) : (
+      <ArrowDown className="h-4 w-4 ml-1 text-gray-900" />
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -62,6 +153,91 @@ export default function ClubsPage() {
         </p>
       </div>
 
+      {/* Filters Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filtres et tri
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Department filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Département
+              </label>
+              <Input
+                placeholder="Ex: 75, 92..."
+                value={departmentInput}
+                onChange={(e) => setDepartmentInput(e.target.value)}
+              />
+            </div>
+
+            {/* Reservation System filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Système de réservation
+              </label>
+              <Select
+                value={reservationSystemInput}
+                onValueChange={setReservationSystemInput}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous</SelectItem>
+                  <SelectItem value="GESTION_SPORTS">GestionSports</SelectItem>
+                  <SelectItem value="DOIN_SPORT">DoinSport</SelectItem>
+                  <SelectItem value="TENUP">TenUp</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Verified filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Vérifié
+              </label>
+              <Select value={verifiedInput} onValueChange={setVerifiedInput}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous</SelectItem>
+                  <SelectItem value="true">Oui</SelectItem>
+                  <SelectItem value="false">Non</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Action buttons */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 invisible">
+                Actions
+              </label>
+              <div className="flex gap-2">
+                <Button onClick={handleApplyFilters} className="flex-1">
+                  Appliquer
+                </Button>
+                {hasActiveFilters && (
+                  <Button
+                    variant="outline"
+                    onClick={handleResetFilters}
+                    size="icon"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Results Card */}
       <Card>
         <CardHeader>
           <CardTitle>Liste des clubs</CardTitle>
@@ -85,28 +261,71 @@ export default function ClubsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nom</TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => handleSort("name")}
+                        className="flex items-center hover:text-gray-900 font-medium"
+                      >
+                        Nom
+                        {renderSortIcon("name")}
+                      </button>
+                    </TableHead>
                     <TableHead>Ville</TableHead>
                     <TableHead>Dép.</TableHead>
                     <TableHead>LR</TableHead>
-                    <TableHead className="text-right">Fav</TableHead>
-                    <TableHead className="text-right">Match</TableHead>
+                    <TableHead className="text-right">
+                      <button
+                        onClick={() => handleSort("favoriteCount")}
+                        className="flex items-center ml-auto hover:text-gray-900 font-medium"
+                      >
+                        Fav
+                        {renderSortIcon("favoriteCount")}
+                      </button>
+                    </TableHead>
+                    <TableHead className="text-right">
+                      <button
+                        onClick={() => handleSort("matchCount")}
+                        className="flex items-center ml-auto hover:text-gray-900 font-medium"
+                      >
+                        Match
+                        {renderSortIcon("matchCount")}
+                      </button>
+                    </TableHead>
                     <TableHead>Vérifié</TableHead>
-                    <TableHead>Updated</TableHead>
-                    <TableHead>Scraped</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => handleSort("lastAdminUpdateAt")}
+                        className="flex items-center hover:text-gray-900 font-medium"
+                      >
+                        Updated
+                        {renderSortIcon("lastAdminUpdateAt")}
+                      </button>
+                    </TableHead>
+                    <TableHead>
+                      <button
+                        onClick={() => handleSort("lastScrapedAt")}
+                        className="flex items-center hover:text-gray-900 font-medium"
+                      >
+                        Scraped
+                        {renderSortIcon("lastScrapedAt")}
+                      </button>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {clubs.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={9} className="text-center py-8 text-gray-500">
                         Aucun club trouvé.
                       </TableCell>
                     </TableRow>
                   ) : (
                     clubs.map((club) => (
-                      <TableRow key={club.id}>
+                      <TableRow
+                        key={club.id}
+                        className="cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={() => router.push(`/admin/clubs/${club.id}`)}
+                      >
                         <TableCell className="font-medium">{club.name}</TableCell>
                         <TableCell>{club.city}</TableCell>
                         <TableCell>{club.department}</TableCell>
@@ -126,25 +345,40 @@ export default function ClubsPage() {
                         <TableCell>
                           {club.lastScrapedAt ? formatDate(club.lastScrapedAt) : "-"}
                         </TableCell>
-                        <TableCell className="text-right">
-                          <Link href={`/admin/clubs/${club.id}`}>
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4 mr-2" />
-                              Voir
-                            </Button>
-                          </Link>
-                        </TableCell>
                       </TableRow>
                     ))
                   )}
                 </TableBody>
               </Table>
 
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
+              {/* Pagination */}
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center gap-4">
                   <div className="text-sm text-gray-600">
-                    Page {currentPage + 1} sur {totalPages} ({totalElements} résultats)
+                    {totalElements > 0 ? (
+                      <>
+                        {currentPage * pageSize + 1}-
+                        {Math.min((currentPage + 1) * pageSize, totalElements)} sur {totalElements} résultats
+                      </>
+                    ) : (
+                      "Aucun résultat"
+                    )}
                   </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Afficher :</span>
+                    <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                      <SelectTrigger className="w-20">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="20">20</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                {totalPages > 1 && (
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -163,8 +397,8 @@ export default function ClubsPage() {
                       Suivant
                     </Button>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </>
           )}
         </CardContent>
