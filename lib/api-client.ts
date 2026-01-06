@@ -144,6 +144,9 @@ class ApiClient {
     }
 
     // Optional filters
+    if (params?.name != null) {
+      searchParams.set("name", params.name);
+    }
     if (params?.department != null) {
       searchParams.set("department", params.department);
     }

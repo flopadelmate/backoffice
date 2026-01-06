@@ -104,6 +104,7 @@ export interface GetClubsParams {
   sortBy?: string; // Default: "name"
   sortDir?: "asc" | "desc"; // Default: "asc"
   // Optional filters
+  name?: string;
   department?: string;
   verified?: boolean;
   reservationSystem?: ReservationSystem;

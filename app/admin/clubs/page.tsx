@@ -60,11 +60,13 @@ export default function ClubsPage() {
   const [sortDir, setSortDir] = useState<SortDirection>("asc");
 
   // Filter state (not applied until "Appliquer" is clicked)
+  const [nameInput, setNameInput] = useState("");
   const [departmentInput, setDepartmentInput] = useState("");
   const [reservationSystemInput, setReservationSystemInput] = useState<string>("all");
   const [verifiedInput, setVerifiedInput] = useState<string>("all");
 
   // Applied filters (these are sent to the API)
+  const [appliedName, setAppliedName] = useState<string | undefined>();
   const [appliedDepartment, setAppliedDepartment] = useState<string | undefined>();
   const [appliedReservationSystem, setAppliedReservationSystem] = useState<ReservationSystem | undefined>();
   const [appliedVerified, setAppliedVerified] = useState<boolean | undefined>();
@@ -74,6 +76,7 @@ export default function ClubsPage() {
     size: pageSize,
     sortBy,
     sortDir,
+    name: appliedName,
     department: appliedDepartment,
     reservationSystem: appliedReservationSystem,
     verified: appliedVerified,
@@ -90,6 +93,7 @@ export default function ClubsPage() {
     setCurrentPage(0);
 
     // Apply filters
+    setAppliedName(nameInput.trim() || undefined);
     setAppliedDepartment(departmentInput.trim() || undefined);
     setAppliedReservationSystem(
       reservationSystemInput === "all" ? undefined : (reservationSystemInput as ReservationSystem)
@@ -101,9 +105,11 @@ export default function ClubsPage() {
 
   // Handler: Reset filters
   const handleResetFilters = () => {
+    setNameInput("");
     setDepartmentInput("");
     setReservationSystemInput("all");
     setVerifiedInput("all");
+    setAppliedName(undefined);
     setAppliedDepartment(undefined);
     setAppliedReservationSystem(undefined);
     setAppliedVerified(undefined);
@@ -129,8 +135,15 @@ export default function ClubsPage() {
     setCurrentPage(0); // Reset to first page
   };
 
+  // Handler: Enter key on input fields
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleApplyFilters();
+    }
+  };
+
   // Check if any filter is active
-  const hasActiveFilters = appliedDepartment || appliedReservationSystem || appliedVerified !== undefined;
+  const hasActiveFilters = appliedName || appliedDepartment || appliedReservationSystem || appliedVerified !== undefined;
 
   // Render sort icon
   const renderSortIcon = (field: SortField) => {
@@ -163,6 +176,19 @@ export default function ClubsPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Name filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Nom du club
+              </label>
+              <Input
+                placeholder="Rechercher un club..."
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+            </div>
+
             {/* Department filter */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
@@ -172,6 +198,7 @@ export default function ClubsPage() {
                 placeholder="Ex: 75, 92..."
                 value={departmentInput}
                 onChange={(e) => setDepartmentInput(e.target.value)}
+                onKeyDown={handleKeyDown}
               />
             </div>
 
@@ -213,26 +240,22 @@ export default function ClubsPage() {
               </Select>
             </div>
 
-            {/* Action buttons */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700 invisible">
-                Actions
-              </label>
-              <div className="flex gap-2">
-                <Button onClick={handleApplyFilters} className="flex-1">
-                  Appliquer
-                </Button>
-                {hasActiveFilters && (
-                  <Button
-                    variant="outline"
-                    onClick={handleResetFilters}
-                    size="icon"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
+          </div>
+
+          {/* Second row with action buttons */}
+          <div className="mt-4 flex justify-end gap-2">
+            <Button onClick={handleApplyFilters}>
+              Appliquer les filtres
+            </Button>
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                onClick={handleResetFilters}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Réinitialiser
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
