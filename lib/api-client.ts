@@ -1,8 +1,6 @@
 import type {
   LoginRequest,
   BackofficeLoginResponse,
-  Club,
-  ClubUpdateRequest,
   PaginatedResponse,
   KPIMetrics,
   Player,
@@ -16,6 +14,11 @@ import type {
   MatchmakingQueueWithReservationRequest,
   MatchmakingGroupResponseDto,
   MatchmakingGroupUpdateRequest,
+  SpringPage,
+  ClubBackofficeListDto,
+  ClubBackofficeDetailDto,
+  ClubBackofficeUpdateDto,
+  GetClubsParams,
 } from "@/types/api";
 
 // Use relative path - Next.js will proxy to backend via rewrites
@@ -121,30 +124,58 @@ class ApiClient {
   // Clubs
   // ============================================================================
 
-  async getClubs(params?: {
-    page?: number;
-    pageSize?: number;
-    search?: string;
-  }): Promise<PaginatedResponse<Club>> {
+  async getClubs(
+    params?: GetClubsParams
+  ): Promise<SpringPage<ClubBackofficeListDto>> {
     const searchParams = new URLSearchParams();
-    if (params?.page) searchParams.set("page", params.page.toString());
-    if (params?.pageSize)
-      searchParams.set("pageSize", params.pageSize.toString());
-    if (params?.search) searchParams.set("search", params.search);
+
+    // Handle page (0-indexed) - use != null to avoid falsy 0
+    if (params?.page != null) {
+      searchParams.set("page", params.page.toString());
+    }
+    if (params?.size != null) {
+      searchParams.set("size", params.size.toString());
+    }
+    if (params?.sortBy != null) {
+      searchParams.set("sortBy", params.sortBy);
+    }
+    if (params?.sortDir != null) {
+      searchParams.set("sortDir", params.sortDir);
+    }
+
+    // Optional filters
+    if (params?.department != null) {
+      searchParams.set("department", params.department);
+    }
+    if (params?.verified != null) {
+      searchParams.set("verified", params.verified.toString());
+    }
+    if (params?.reservationSystem != null) {
+      searchParams.set("reservationSystem", params.reservationSystem);
+    }
+    if (params?.minFavoriteCount != null) {
+      searchParams.set("minFavoriteCount", params.minFavoriteCount.toString());
+    }
+    if (params?.minMatchCount != null) {
+      searchParams.set("minMatchCount", params.minMatchCount.toString());
+    }
 
     const query = searchParams.toString();
-    return this.request<PaginatedResponse<Club>>(
-      `/admin/clubs${query ? `?${query}` : ""}`
+    return this.request<SpringPage<ClubBackofficeListDto>>(
+      `/backoffice/clubs${query ? `?${query}` : ""}`
     );
   }
 
-  async getClub(id: string): Promise<Club> {
-    return this.request<Club>(`/admin/clubs/${id}`);
+  async getClub(id: number): Promise<ClubBackofficeDetailDto> {
+    return this.request<ClubBackofficeDetailDto>(`/backoffice/clubs/${id}`);
   }
 
-  async updateClub(id: string, data: ClubUpdateRequest): Promise<Club> {
-    return this.request<Club>(`/admin/clubs/${id}`, {
-      method: "PATCH",
+  async updateClub(
+    id: number,
+    data: ClubBackofficeUpdateDto
+  ): Promise<ClubBackofficeDetailDto> {
+    return this.request<ClubBackofficeDetailDto>(`/backoffice/clubs/${id}`, {
+      method: "PUT",
       body: JSON.stringify(data),
     });
   }

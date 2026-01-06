@@ -52,27 +52,123 @@ export interface ApiError {
 }
 
 // ============================================================================
-// Club Types
+// Club Types (Backend API)
 // ============================================================================
 
-export type ClubStatus = "ACTIVE" | "INACTIVE" | "PENDING";
+export type ReservationSystem = "GESTION_SPORTS" | "DOIN_SPORT" | "TENUP";
 
-export interface Club {
-  id: string;
-  name: string;
-  city: string;
-  address: string;
-  status: ClubStatus;
-  visible: boolean;
-  courtCount: number;
-  createdAt: string;
-  updatedAt: string;
+// Spring Page response structure
+export interface SpringPage<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number; // Current page (0-indexed)
+  size: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  sort: {
+    sorted: boolean;
+    unsorted: boolean;
+    empty: boolean;
+  };
 }
 
-export interface ClubUpdateRequest {
-  status?: ClubStatus;
-  visible?: boolean;
-  courtCount?: number;
+// Club list DTO (returned in SpringPage.content from GET /backoffice/clubs)
+export interface ClubBackofficeListDto {
+  id: number;
+  publicId: string;
+  name: string;
+  city: string;
+  department: string;
+  verified: boolean;
+  reservationSystem?: ReservationSystem;
+  favoriteCount: number;
+  matchCount: number;
+  lastAdminUpdateAt: string; // ISO datetime
+  lastScrapedAt: string; // ISO datetime
+}
+
+// Query parameters for GET /backoffice/clubs
+export interface GetClubsParams {
+  page?: number; // Default: 0 (0-indexed)
+  size?: number; // Default: 20
+  sortBy?: string; // Default: "name"
+  sortDir?: "asc" | "desc"; // Default: "asc"
+  // Optional filters
+  department?: string;
+  verified?: boolean;
+  reservationSystem?: ReservationSystem;
+  minFavoriteCount?: number;
+  minMatchCount?: number;
+}
+
+// Club detail DTO (returned from GET /backoffice/clubs/{id})
+export interface ClubBackofficeDetailDto {
+  id: number;
+  publicId: string;
+  name: string;
+  phone: string;
+  address: {
+    street: string;
+    zipCode: string;
+    city: string;
+  };
+  websiteUrl: string;
+  latitude: number;
+  longitude: number;
+  googleRating: number;
+  googleReviewCount: number;
+  photoUrls: string[];
+  mainPhotoUrl: string;
+  openingHours: Array<{
+    day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+    openTime: string;
+    closeTime: string;
+  }>;
+  favoriteCount: number;
+  matchCount: number;
+  reservationSystem?: ReservationSystem;
+  reservationUrl: string;
+  courts: Array<{
+    name: string;
+    sportType: string;
+    surface: string;
+    indoor: boolean;
+  }>;
+  verified: boolean;
+  notes: string;
+  lastAdminUpdateAt: string; // ISO datetime
+  lastScrapedAt: string; // ISO datetime
+}
+
+// Update DTO for PUT /backoffice/clubs/{id}
+export interface ClubBackofficeUpdateDto {
+  name?: string;
+  phone?: string;
+  address?: {
+    street: string;
+    zipCode: string;
+    city: string;
+  };
+  websiteUrl?: string;
+  geo?: {
+    latitude: number;
+    longitude: number;
+  };
+  reservationSystem?: ReservationSystem;
+  reservationUrl?: string;
+  mainPhotoUrl?: string;
+  verified?: boolean;
+  notes?: string;
 }
 
 // ============================================================================

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useClubs } from "@/hooks/use-clubs";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -14,36 +13,45 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Eye } from "lucide-react";
-import type { ClubStatus } from "@/types/api";
+import { Eye } from "lucide-react";
 
-const statusColors: Record<ClubStatus, string> = {
-  ACTIVE: "bg-green-100 text-green-800",
-  INACTIVE: "bg-gray-100 text-gray-800",
-  PENDING: "bg-yellow-100 text-yellow-800",
-};
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString("fr-FR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+}
 
-const statusLabels: Record<ClubStatus, string> = {
-  ACTIVE: "Actif",
-  INACTIVE: "Inactif",
-  PENDING: "En attente",
-};
+function formatReservationSystem(system: string | undefined): string {
+  if (!system) return "-";
+
+  // Mapping des valeurs backend vers affichage court
+  const mapping: Record<string, string> = {
+    GESTION_SPORTS: "GestionSports",
+    DOIN_SPORT: "DoinSport",
+    TENUP: "TenUp",
+  };
+
+  return mapping[system] || system;
+}
 
 export default function ClubsPage() {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
+  // Page is 0-indexed for backend API
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 20; // Backend default
 
   const { data, isLoading, isError } = useClubs({
-    page,
-    pageSize,
-    search,
+    page: currentPage,
+    size: pageSize,
+    sortBy: "name",
+    sortDir: "asc",
   });
 
-  const handleSearch = (value: string) => {
-    setSearch(value);
-    setPage(1); // Reset to first page on search
-  };
+  // Extract data from Spring Page structure
+  const clubs = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 0;
+  const totalElements = data?.totalElements ?? 0;
 
   return (
     <div className="space-y-6">
@@ -57,17 +65,6 @@ export default function ClubsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Liste des clubs</CardTitle>
-          <div className="flex items-center gap-2 mt-4">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Rechercher par nom ou ville..."
-                value={search}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          </div>
         </CardHeader>
         <CardContent>
           {isLoading && (
@@ -90,44 +87,44 @@ export default function ClubsPage() {
                   <TableRow>
                     <TableHead>Nom</TableHead>
                     <TableHead>Ville</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Visible</TableHead>
-                    <TableHead>Courts</TableHead>
-                    <TableHead>Créé le</TableHead>
+                    <TableHead>Dép.</TableHead>
+                    <TableHead>LR</TableHead>
+                    <TableHead className="text-right">Fav</TableHead>
+                    <TableHead className="text-right">Match</TableHead>
+                    <TableHead>Vérifié</TableHead>
+                    <TableHead>Updated</TableHead>
+                    <TableHead>Scraped</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.data.length === 0 ? (
+                  {clubs.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={10} className="text-center py-8 text-gray-500">
                         Aucun club trouvé.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    data.data.map((club) => (
+                    clubs.map((club) => (
                       <TableRow key={club.id}>
                         <TableCell className="font-medium">{club.name}</TableCell>
                         <TableCell>{club.city}</TableCell>
+                        <TableCell>{club.department}</TableCell>
+                        <TableCell>{formatReservationSystem(club.reservationSystem)}</TableCell>
+                        <TableCell className="text-right">{club.favoriteCount}</TableCell>
+                        <TableCell className="text-right">{club.matchCount}</TableCell>
                         <TableCell>
-                          <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                              statusColors[club.status]
-                            }`}
-                          >
-                            {statusLabels[club.status]}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {club.visible ? (
-                            <span className="text-green-600">Oui</span>
+                          {club.verified ? (
+                            <span className="text-green-600">✓</span>
                           ) : (
-                            <span className="text-gray-400">Non</span>
+                            <span className="text-gray-400">✗</span>
                           )}
                         </TableCell>
-                        <TableCell>{club.courtCount}</TableCell>
                         <TableCell>
-                          {new Date(club.createdAt).toLocaleDateString("fr-FR")}
+                          {club.lastAdminUpdateAt ? formatDate(club.lastAdminUpdateAt) : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {club.lastScrapedAt ? formatDate(club.lastScrapedAt) : "-"}
                         </TableCell>
                         <TableCell className="text-right">
                           <Link href={`/admin/clubs/${club.id}`}>
@@ -143,25 +140,25 @@ export default function ClubsPage() {
                 </TableBody>
               </Table>
 
-              {data.totalPages > 1 && (
+              {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-gray-600">
-                    Page {data.page} sur {data.totalPages} ({data.total} résultats)
+                    Page {currentPage + 1} sur {totalPages} ({totalElements} résultats)
                   </div>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
+                      onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                      disabled={currentPage === 0}
                     >
                       Précédent
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
-                      disabled={page === data.totalPages}
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                      disabled={currentPage === totalPages - 1}
                     >
                       Suivant
                     </Button>

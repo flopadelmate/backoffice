@@ -1,70 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useClub, useUpdateClub } from "@/hooks/use-clubs";
+import { useParams } from "next/navigation";
+import { useClub } from "@/hooks/use-clubs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import type { ClubStatus } from "@/types/api";
 
 export default function ClubDetailPage() {
   const params = useParams();
-  const router = useRouter();
-  const clubId = params.id as string;
+  const clubId = parseInt(params.id as string, 10);
 
   const { data: club, isLoading, isError } = useClub(clubId);
-  const updateMutation = useUpdateClub();
-
-  const [status, setStatus] = useState<ClubStatus | undefined>();
-  const [visible, setVisible] = useState<boolean | undefined>();
-  const [courtCount, setCourtCount] = useState<number | undefined>();
-
-  // Initialize form values when club data loads
-  if (club && status === undefined) {
-    setStatus(club.status);
-    setVisible(club.visible);
-    setCourtCount(club.courtCount);
-  }
-
-  const hasChanges =
-    status !== club?.status ||
-    visible !== club?.visible ||
-    courtCount !== club?.courtCount;
-
-  const handleSave = () => {
-    if (!club) return;
-
-    const updates: {
-      status?: ClubStatus;
-      visible?: boolean;
-      courtCount?: number;
-    } = {};
-
-    if (status !== club.status) updates.status = status;
-    if (visible !== club.visible) updates.visible = visible;
-    if (courtCount !== club.courtCount) updates.courtCount = courtCount;
-
-    updateMutation.mutate(
-      { id: clubId, data: updates },
-      {
-        onSuccess: () => {
-          // Show success feedback could be added here
-          alert("Club mis à jour avec succès!");
-        },
-      }
-    );
-  };
 
   if (isLoading) {
     return (
@@ -100,7 +48,7 @@ export default function ClubDetailPage() {
             </Button>
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">{club.name}</h1>
-          <p className="text-gray-600 mt-1">Détails et édition du club</p>
+          <p className="text-gray-600 mt-1">Détails du club</p>
         </div>
       </div>
 
@@ -112,68 +60,137 @@ export default function ClubDetailPage() {
           <CardContent className="space-y-4">
             <div>
               <Label className="text-sm font-medium text-gray-600">Nom</Label>
-              <Input value={club.name} disabled className="mt-1" />
+              <p className="mt-1">{club.name}</p>
             </div>
             <div>
-              <Label className="text-sm font-medium text-gray-600">Ville</Label>
-              <Input value={club.city} disabled className="mt-1" />
+              <Label className="text-sm font-medium text-gray-600">Téléphone</Label>
+              <p className="mt-1">{club.phone || "-"}</p>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-600">Adresse</Label>
-              <Input value={club.address} disabled className="mt-1" />
+              <p className="mt-1">
+                {club.address.street}
+                <br />
+                {club.address.zipCode} {club.address.city}
+              </p>
+            </div>
+            <div>
+              <Label className="text-sm font-medium text-gray-600">Site web</Label>
+              <p className="mt-1">
+                {club.websiteUrl ? (
+                  <a
+                    href={club.websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {club.websiteUrl}
+                  </a>
+                ) : (
+                  "-"
+                )}
+              </p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Paramètres modifiables</CardTitle>
+            <CardTitle>Métriques</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="status">Statut</Label>
-              <Select value={status} onValueChange={(value) => setStatus(value as ClubStatus)}>
-                <SelectTrigger id="status" className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ACTIVE">Actif</SelectItem>
-                  <SelectItem value="INACTIVE">Inactif</SelectItem>
-                  <SelectItem value="PENDING">En attente</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label className="text-sm font-medium text-gray-600">Favoris</Label>
+              <p className="mt-1">{club.favoriteCount}</p>
             </div>
-
             <div>
-              <Label htmlFor="visible">Visibilité</Label>
-              <Select
-                value={visible ? "true" : "false"}
-                onValueChange={(value) => setVisible(value === "true")}
-              >
-                <SelectTrigger id="visible" className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="true">Visible</SelectItem>
-                  <SelectItem value="false">Caché</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label className="text-sm font-medium text-gray-600">Matchs créés</Label>
+              <p className="mt-1">{club.matchCount}</p>
             </div>
-
             <div>
-              <Label htmlFor="courtCount">Nombre de courts</Label>
-              <Input
-                id="courtCount"
-                type="number"
-                value={courtCount}
-                onChange={(e) => setCourtCount(parseInt(e.target.value))}
-                className="mt-1"
-                min={1}
-              />
+              <Label className="text-sm font-medium text-gray-600">Vérifié</Label>
+              <p className="mt-1">{club.verified ? "Oui" : "Non"}</p>
             </div>
+            <div>
+              <Label className="text-sm font-medium text-gray-600">
+                Système de réservation
+              </Label>
+              <p className="mt-1">{club.reservationSystem || "-"}</p>
+            </div>
+            {club.reservationUrl && (
+              <div>
+                <Label className="text-sm font-medium text-gray-600">
+                  URL de réservation
+                </Label>
+                <p className="mt-1">
+                  <a
+                    href={club.reservationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {club.reservationUrl}
+                  </a>
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Géolocalisation</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div>
+            <Label className="text-sm font-medium text-gray-600">Latitude</Label>
+            <p className="mt-1">{club.latitude}</p>
+          </div>
+          <div>
+            <Label className="text-sm font-medium text-gray-600">Longitude</Label>
+            <p className="mt-1">{club.longitude}</p>
+          </div>
+          <div>
+            <Label className="text-sm font-medium text-gray-600">Note Google</Label>
+            <p className="mt-1">
+              {club.googleRating} ({club.googleReviewCount} avis)
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {club.courts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Terrains ({club.courts.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {club.courts.map((court, index) => (
+                <div key={index} className="border-l-4 border-blue-500 pl-4 py-2">
+                  <p className="font-medium">{court.name}</p>
+                  <p className="text-sm text-gray-600">
+                    {court.sportType} - {court.surface} -{" "}
+                    {court.indoor ? "Intérieur" : "Extérieur"}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {club.notes && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Notes admin</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">{club.notes}</p>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
@@ -181,35 +198,27 @@ export default function ClubDetailPage() {
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div>
-            <Label className="text-sm font-medium text-gray-600">Créé le</Label>
+            <Label className="text-sm font-medium text-gray-600">
+              Dernière mise à jour admin
+            </Label>
             <p className="mt-1">
-              {new Date(club.createdAt).toLocaleString("fr-FR")}
+              {club.lastAdminUpdateAt
+                ? new Date(club.lastAdminUpdateAt).toLocaleString("fr-FR")
+                : "-"}
             </p>
           </div>
           <div>
-            <Label className="text-sm font-medium text-gray-600">Modifié le</Label>
+            <Label className="text-sm font-medium text-gray-600">
+              Dernier scraping
+            </Label>
             <p className="mt-1">
-              {new Date(club.updatedAt).toLocaleString("fr-FR")}
+              {club.lastScrapedAt
+                ? new Date(club.lastScrapedAt).toLocaleString("fr-FR")
+                : "-"}
             </p>
           </div>
         </CardContent>
       </Card>
-
-      {updateMutation.isError && (
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-800">
-          Une erreur est survenue lors de la mise à jour du club.
-        </div>
-      )}
-
-      <div className="flex justify-end">
-        <Button
-          onClick={handleSave}
-          disabled={!hasChanges || updateMutation.isPending}
-        >
-          <Save className="mr-2 h-4 w-4" />
-          {updateMutation.isPending ? "Enregistrement..." : "Enregistrer les modifications"}
-        </Button>
-      </div>
     </div>
   );
 }
