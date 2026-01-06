@@ -51,7 +51,10 @@ export function useUpdateClub() {
     }) => {
       return apiClient.updateClub(id, data);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (updatedClub, variables) => {
+      // Avoid UI flicker by immediately updating the detail cache
+      queryClient.setQueryData(["club", variables.id], updatedClub);
+
       // Invalidate queries to refetch
       queryClient.invalidateQueries({ queryKey: ["clubs"] });
       queryClient.invalidateQueries({ queryKey: ["club", variables.id] });
