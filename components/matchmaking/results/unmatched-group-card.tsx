@@ -63,6 +63,7 @@ export function UnmatchedGroupCard({
               key={idx}
               name={player.name}
               pmr={player.pmr}
+              position={undefined}
             />
           ))}
           {/* Remplir jusqu'à 4 slots si moins de joueurs */}

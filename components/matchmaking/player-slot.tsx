@@ -2,7 +2,7 @@ import { Plus, X } from "lucide-react";
 import type { Player } from "@/types/api";
 
 interface PlayerSlotProps {
-  player?: Player;
+  player: Player | undefined;
   canRemove: boolean;
   canAdd: boolean;
   onRemove?: () => void;

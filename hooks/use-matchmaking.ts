@@ -15,8 +15,10 @@ import type {
   MatchmakingReport,
   MatchmakingGroupResponseDto,
   MatchmakingGroupUpdateRequest,
+  MatchmakingRunRequest,
 } from "@/types/api";
 import mockReport from "@/docs/rapport_matchmaking_1.json";
+import { addOptionalBool } from "@/lib/api-params-helpers";
 
 // Query keys centralisées
 export const MATCHMAKING_QUEUE_KEY = ["matchmaking-queue"] as const;
@@ -211,8 +213,10 @@ function cleanPlayerFromCompositions(playerId: string) {
   // 2. Le retirer de toutes les autres compositions
   Object.keys(PLAYER_TEAM_COMPOSITION).forEach((key) => {
     const composition = PLAYER_TEAM_COMPOSITION[key];
-    const updated = composition.map(id => id === playerId ? null : id) as [string | null, string | null, string | null];
-    PLAYER_TEAM_COMPOSITION[key] = updated;
+    if (composition) {
+      const updated = composition.map(id => id === playerId ? null : id) as [string | null, string | null, string | null];
+      PLAYER_TEAM_COMPOSITION[key] = updated;
+    }
   });
 }
 
@@ -357,13 +361,20 @@ export function usePlayers() {
         ? PLAYER_TOLERANCE.get(player.publicId) ?? null
         : 0.5;
 
-      return {
+      const teamComposition = PLAYER_TEAM_COMPOSITION[player.publicId];
+      const basePlayer = {
         ...player,
         tolerance,
         isEnqueued: enqueuedSet.has(player.publicId),
         enqueuedGroupPublicId: playerToGroupMap.get(player.publicId) ?? null,
-        teamComposition: PLAYER_TEAM_COMPOSITION[player.publicId],
       };
+
+      // Ajouter teamComposition seulement si défini
+      if (teamComposition) {
+        return { ...basePlayer, teamComposition };
+      }
+
+      return basePlayer as PlayerWithUIState;
     });
   }, [playersQuery.data, enqueuedSet, playerToGroupMap]);
 
@@ -673,14 +684,23 @@ export function useRunMatchmaking() {
     mutationFn: async ({ scheduledTime, dryRun }: { scheduledTime: string; dryRun?: boolean }) => {
       // Convert scheduledTime (HH:mm format) to ISO date-time format
       const today = new Date();
-      const [hours, minutes] = scheduledTime.split(":");
+      const parts = scheduledTime.split(":");
+      if (parts.length !== 2 || !parts[0] || !parts[1]) {
+        throw new Error(`Format invalide pour scheduledTime: ${scheduledTime} (attendu: HH:mm)`);
+      }
+      const hours = parts[0];
+      const minutes = parts[1];
       today.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
       const executionTime = today.toISOString();
+
+      // Build params with helpers to respect exactOptionalPropertyTypes
+      let params: MatchmakingRunRequest = { executionTime };
+      params = addOptionalBool(params, "dryRun", dryRun);
 
       // Appel API réel
       // Le backend retourne pour l'instant MatchmakingRunResponse { matchCount, executionTime }
       // Plus tard, il retournera MatchmakingReport complet (avec phases, summary, etc.)
-      const response = await apiClient.runMatchmaking({ executionTime, dryRun });
+      const response = await apiClient.runMatchmaking(params);
 
       return response;
     },

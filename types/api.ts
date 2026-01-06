@@ -55,7 +55,81 @@ export interface ApiError {
 // Club Types (Backend API)
 // ============================================================================
 
-export type ReservationSystem = "GESTION_SPORTS" | "DOIN_SPORT" | "TENUP";
+/**
+ * IMPORTANT: Système de réservation
+ *
+ * Le backend accepte et renvoie ces valeurs:
+ * - GESTION_SPORTS, DOIN_SPORT, TENUP (systèmes implémentés)
+ * - UNKNOWN: Système inconnu ou non spécifié
+ * - NOT_IMPLEMENTED: Système identifié mais pas encore supporté
+ *
+ * Le backend peut aussi renvoyer `null` dans les anciennes réponses GET
+ * (pour compatibilité, on normalise null → "UNKNOWN").
+ */
+
+/**
+ * Valeurs acceptées par le backend (PUT, query params) et retournées (GET).
+ * Le backend accepte maintenant UNKNOWN et NOT_IMPLEMENTED.
+ */
+export type ReservationSystemApi =
+  | "GESTION_SPORTS"
+  | "DOIN_SPORT"
+  | "TENUP"
+  | "UNKNOWN"
+  | "NOT_IMPLEMENTED";
+
+/**
+ * Valeurs retournées par le backend dans les réponses GET.
+ * Le backend peut renvoyer null pour compatibilité (anciennes données).
+ */
+export type ReservationSystemFromApi = ReservationSystemApi | null;
+
+/**
+ * Type interne pour usage dans l'application.
+ * Identique à ReservationSystemApi (plus de mapping nécessaire).
+ */
+export type ReservationSystem = ReservationSystemApi;
+
+/**
+ * Normalise la valeur du backend pour usage interne.
+ * Convertit null → "UNKNOWN".
+ *
+ * @param value - Valeur retournée par le backend (peut être null)
+ * @returns Valeur normalisée (jamais null)
+ *
+ * @example
+ * normalizeReservationSystem(null) → "UNKNOWN"
+ * normalizeReservationSystem("GESTION_SPORTS") → "GESTION_SPORTS"
+ */
+export function normalizeReservationSystem(
+  value: ReservationSystemFromApi
+): ReservationSystem {
+  return value ?? "UNKNOWN";
+}
+
+/**
+ * Encode la valeur interne pour envoi au backend.
+ * Depuis que le backend accepte UNKNOWN et NOT_IMPLEMENTED, cette fonction
+ * est devenue un simple pass-through (no-op).
+ *
+ * @param value - Valeur interne (peut être undefined)
+ * @returns Valeur API valide ou undefined
+ *
+ * @example
+ * encodeReservationSystemForApi(undefined) → undefined (omis)
+ * encodeReservationSystemForApi("UNKNOWN") → "UNKNOWN"
+ * encodeReservationSystemForApi("NOT_IMPLEMENTED") → "NOT_IMPLEMENTED"
+ * encodeReservationSystemForApi("GESTION_SPORTS") → "GESTION_SPORTS"
+ *
+ * Usage avec addOptionalEnum:
+ * params = addOptionalEnum(params, "reservationSystem", encodeReservationSystemForApi(value));
+ */
+export function encodeReservationSystemForApi(
+  value: ReservationSystem | undefined
+): ReservationSystemApi | undefined {
+  // Le backend accepte maintenant toutes les valeurs, pas de filtrage nécessaire
+  return value;
+}
 
 // Spring Page response structure
 export interface SpringPage<T> {

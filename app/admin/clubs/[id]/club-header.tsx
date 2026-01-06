@@ -91,25 +91,26 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
               />
             </div>
 
-            {/* ReservationSystem - Select always active with "NONE" ↔ undefined mapping */}
+            {/* ReservationSystem - Select always active with "UNKNOWN" = pas de système */}
             <div>
               <Label htmlFor="reservationSystem">Système de réservation</Label>
               <Select
-                value={draft.reservationSystem ?? "NONE"}
+                value={draft.reservationSystem ?? "UNKNOWN"}
                 onValueChange={(value) =>
                   onUpdate({
-                    reservationSystem: value === "NONE" ? undefined : (value as ReservationSystem),
+                    reservationSystem: value as ReservationSystem,
                   })
                 }
               >
                 <SelectTrigger id="reservationSystem" className={inputClassName}>
-                  <SelectValue placeholder="Aucun" />
+                  <SelectValue placeholder="Inconnu" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="NONE">Aucun</SelectItem>
                   <SelectItem value="GESTION_SPORTS">Gestion Sports</SelectItem>
                   <SelectItem value="DOIN_SPORT">Doin Sport</SelectItem>
                   <SelectItem value="TENUP">TenUp</SelectItem>
+                  <SelectItem value="NOT_IMPLEMENTED">Non implémenté</SelectItem>
+                  <SelectItem value="UNKNOWN">Inconnu</SelectItem>
                 </SelectContent>
               </Select>
             </div>

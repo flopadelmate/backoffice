@@ -171,14 +171,22 @@ export function PlayerBase() {
       },
       {
         onSuccess: () => {
-          setEditStateByPlayerId((prev) => ({
-            ...prev,
-            [player.publicId]: {
-              ...prev[player.publicId],
-              dirty: false,
-              awaitingAck: true,
-            },
-          }));
+          setEditStateByPlayerId((prev) => {
+            const existing = prev[player.publicId];
+            if (!existing) {
+              // Cas improbable: on sauvegarde alors qu'il n'y a pas de draft
+              // On ne modifie pas le state dans ce cas
+              return prev;
+            }
+            return {
+              ...prev,
+              [player.publicId]: {
+                ...existing,
+                dirty: false,
+                awaitingAck: true,
+              },
+            };
+          });
           setUpdatingPlayerId(null);
           toast.success("Joueur mis à jour");
         },

@@ -3,6 +3,8 @@ import type {
   ClubBackofficeUpdateDto,
   ReservationSystem,
 } from "@/types/api";
+import { encodeReservationSystemForApi } from "@/types/api";
+import { addOptionalEnum } from "@/lib/api-params-helpers";
 
 /**
  * Compute changes between original and current club data
@@ -29,7 +31,11 @@ export function computeChanges(
     changes.verified = current.verified;
   }
   if (original.reservationSystem !== current.reservationSystem) {
-    changes.reservationSystem = current.reservationSystem;
+    // Encode pour envoi API: UNKNOWN/NOT_IMPLEMENTED → undefined (omis)
+    const encodedSystem = encodeReservationSystemForApi(current.reservationSystem);
+    if (encodedSystem !== undefined) {
+      changes.reservationSystem = encodedSystem;
+    }
   }
   if (original.reservationUrl !== current.reservationUrl) {
     changes.reservationUrl = current.reservationUrl;

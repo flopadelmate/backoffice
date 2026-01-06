@@ -1,7 +1,7 @@
 interface PlayerSlotReadOnlyProps {
   name: string;
   pmr: number;
-  position?: "LEFT" | "RIGHT";
+  position: "LEFT" | "RIGHT" | undefined;
 }
 
 export function PlayerSlotReadOnly({ name, pmr, position }: PlayerSlotReadOnlyProps) {

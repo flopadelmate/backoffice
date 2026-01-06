@@ -7,6 +7,7 @@ import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { parseTimeSlot } from "@/lib/utils/time-helpers";
 
 interface DateTimePickerProps {
   value: string | null;
@@ -44,16 +45,26 @@ function generateTimeSlots(variant?: "start" | "end"): string[] {
 
   if (variant === "start") {
     return slots.filter((slot) => {
-      const [hours] = slot.split(":").map(Number);
-      return hours >= 8;
+      try {
+        const { hours } = parseTimeSlot(slot);
+        return hours >= 8;
+      } catch (error) {
+        console.error(error);
+        return true; // Fallback: inclure le slot en cas d'erreur
+      }
     });
   }
 
   if (variant === "end") {
     return slots.filter((slot) => {
-      const [hours, minutes] = slot.split(":").map(Number);
-      const totalMinutes = hours * 60 + minutes;
-      return totalMinutes <= 90 || totalMinutes >= 480;
+      try {
+        const { hours, minutes } = parseTimeSlot(slot);
+        const totalMinutes = hours * 60 + minutes;
+        return totalMinutes <= 90 || totalMinutes >= 480;
+      } catch (error) {
+        console.error(error);
+        return true; // Fallback: inclure le slot en cas d'erreur
+      }
     });
   }
 
@@ -147,10 +158,15 @@ export function DateTimePicker({
       const minMinute = effectiveMin.getMinutes();
 
       return allTimeSlots.filter((slot) => {
-        const [hours, minutes] = slot.split(":").map(Number);
-        if (hours > minHour) return true;
-        if (hours === minHour && minutes >= minMinute) return true;
-        return false;
+        try {
+          const { hours, minutes } = parseTimeSlot(slot);
+          if (hours > minHour) return true;
+          if (hours === minHour && minutes >= minMinute) return true;
+          return false;
+        } catch (error) {
+          console.error(error);
+          return true; // Fallback: inclure le slot en cas d'erreur
+        }
       });
     }
 
@@ -179,18 +195,24 @@ export function DateTimePicker({
   };
 
   const handleSlotSelect = (slot: string) => {
-    const [hours, minutes] = slot.split(":").map(Number);
-    const newDate = new Date(selectedDate);
-    newDate.setHours(hours, minutes, 0, 0);
+    try {
+      const { hours, minutes } = parseTimeSlot(slot);
+      const newDate = new Date(selectedDate);
+      newDate.setHours(hours, minutes, 0, 0);
 
-    const year = newDate.getFullYear();
-    const month = String(newDate.getMonth() + 1).padStart(2, "0");
-    const day = String(newDate.getDate()).padStart(2, "0");
-    const hour = String(newDate.getHours()).padStart(2, "0");
-    const minute = String(newDate.getMinutes()).padStart(2, "0");
-    const isoLocal = `${year}-${month}-${day}T${hour}:${minute}:00`;
+      const year = newDate.getFullYear();
+      const month = String(newDate.getMonth() + 1).padStart(2, "0");
+      const day = String(newDate.getDate()).padStart(2, "0");
+      const hour = String(newDate.getHours()).padStart(2, "0");
+      const minute = String(newDate.getMinutes()).padStart(2, "0");
+      const isoLocal = `${year}-${month}-${day}T${hour}:${minute}:00`;
 
-    onChange(isoLocal);
+      onChange(isoLocal);
+    } catch (error) {
+      console.error(error);
+      // Fallback: ne rien faire, ne pas changer la valeur
+      return;
+    }
     setOpen(false);
   };
 

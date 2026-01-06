@@ -7,7 +7,7 @@ import type { AdminUser } from "@/types/api";
 export function decodeJWT(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split(".");
-    if (parts.length !== 3) {
+    if (parts.length !== 3 || !parts[1]) {
       return null;
     }
 

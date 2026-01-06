@@ -47,9 +47,6 @@ export function ClubCourts({ draft }: ClubCourtsProps) {
                 </div>
               </div>
             ))}
-            <p className="text-xs text-gray-500 mt-4">
-              Les terrains ne sont pas éditables en V1 (endpoint manquant)
-            </p>
           </div>
         ) : (
           <p className="text-sm text-gray-500">

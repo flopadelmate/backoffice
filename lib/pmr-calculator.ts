@@ -9,6 +9,8 @@
  * - Increase sensitivity so the winner can land between mu values (e.g. 4.3)
  */
 
+import { addOptionalNumber } from "@/lib/api-params-helpers";
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -295,34 +297,36 @@ export function computePMR(params: {
   // Debug: base & weighted score at winner
   function makeDebug(questionId: string, answer: string, e: Evidence): QuestionDebugScore {
     if (isForbidden(winnerLevel, e)) {
-      return {
+      let debug: QuestionDebugScore = {
         questionId,
         answer,
         mu: e.mu,
         tau: e.tau,
         weight: e.weight,
-        hardMin: e.hardMin,
-        hardMax: e.hardMax,
         scoreAtWinnerBase: 0,
         scoreAtWinnerWeighted: 0,
       };
+      debug = addOptionalNumber(debug, "hardMin", e.hardMin);
+      debug = addOptionalNumber(debug, "hardMax", e.hardMax);
+      return debug;
     }
 
     const logBase = logScoreDistanceGaussian(winnerLevel, e.mu, e.tau);
     const base = Math.exp(logBase);                 // (0..1]
     const weighted = Math.exp(e.weight * logBase);  // (0..1]
 
-    return {
+    let entry: QuestionDebugScore = {
       questionId,
       answer,
       mu: e.mu,
       tau: e.tau,
       weight: e.weight,
-      hardMin: e.hardMin,
-      hardMax: e.hardMax,
       scoreAtWinnerBase: base,
       scoreAtWinnerWeighted: weighted,
     };
+    entry = addOptionalNumber(entry, "hardMin", e.hardMin);
+    entry = addOptionalNumber(entry, "hardMax", e.hardMax);
+    return entry;
   }
 
   const debugScores: QuestionDebugScore[] = [

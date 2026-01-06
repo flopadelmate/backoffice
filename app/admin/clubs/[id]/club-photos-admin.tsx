@@ -76,10 +76,6 @@ export function ClubPhotosAdmin({
           ) : (
             <p className="text-sm text-gray-500">Aucune photo disponible</p>
           )}
-
-          <p className="text-xs text-gray-500 mt-2">
-            Les photos ne sont pas éditables en V1 (pas de CRUD)
-          </p>
         </div>
 
         {/* Notes */}

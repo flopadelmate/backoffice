@@ -312,10 +312,18 @@ export function QueueControl() {
       {
         onSuccess: () => {
           // Clear dirty + set awaitingAck pour éviter que le poll écrase
-          setEditStateByGroupId((prev) => ({
-            ...prev,
-            [groupId]: { ...prev[groupId], dirty: false, awaitingAck: true },
-          }));
+          setEditStateByGroupId((prev) => {
+            const existing = prev[groupId];
+            if (!existing) {
+              // Cas improbable: on sauvegarde alors qu'il n'y a pas de draft
+              // On ne modifie pas le state dans ce cas
+              return prev;
+            }
+            return {
+              ...prev,
+              [groupId]: { ...existing, dirty: false, awaitingAck: true },
+            };
+          });
           toast.success("Groupe mis à jour");
         },
         onError: (error) => {

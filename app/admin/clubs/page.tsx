@@ -22,7 +22,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowUpDown, ArrowUp, ArrowDown, Filter, X } from "lucide-react";
-import type { ReservationSystem } from "@/types/api";
+import type { ReservationSystem, GetClubsParams } from "@/types/api";
+import {
+  addOptionalString,
+  addOptionalBool,
+  addOptionalEnum,
+} from "@/lib/api-params-helpers";
+import { encodeReservationSystemForApi } from "@/types/api";
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString("fr-FR", {
@@ -40,6 +46,8 @@ function formatReservationSystem(system: string | undefined): string {
     GESTION_SPORTS: "GestionSports",
     DOIN_SPORT: "DoinSport",
     TENUP: "TenUp",
+    UNKNOWN: "Inconnu",
+    NOT_IMPLEMENTED: "Non implémenté",
   };
 
   return mapping[system] || system;
@@ -173,16 +181,23 @@ export default function ClubsPage() {
   const [appliedReservationSystem, setAppliedReservationSystem] = useState<ReservationSystem | undefined>();
   const [appliedVerified, setAppliedVerified] = useState<boolean | undefined>();
 
-  const { data, isLoading, isError } = useClubs({
+  // Build query params using helpers to respect exactOptionalPropertyTypes
+  let queryParams: GetClubsParams = {
     page: currentPage,
     size: pageSize,
     sortBy,
     sortDir,
-    name: appliedName,
-    department: appliedDepartment,
-    reservationSystem: appliedReservationSystem,
-    verified: appliedVerified,
-  });
+  };
+  queryParams = addOptionalString(queryParams, "name", appliedName);
+  queryParams = addOptionalString(queryParams, "department", appliedDepartment);
+  queryParams = addOptionalEnum(
+    queryParams,
+    "reservationSystem",
+    encodeReservationSystemForApi(appliedReservationSystem)
+  );
+  queryParams = addOptionalBool(queryParams, "verified", appliedVerified);
+
+  const { data, isLoading, isError } = useClubs(queryParams);
 
   // Extract data from Spring Page structure
   const clubs = data?.content ?? [];
@@ -215,8 +230,8 @@ export default function ClubsPage() {
     }
   }, [searchParams.toString()]);
 
-  // Update URL with router.replace (no history entry)
-  const replaceUrl = (params: {
+  // Build URL params using helpers
+  const buildUrlParams = (config: {
     page: number;
     size: number;
     sortBy: SortField;
@@ -226,12 +241,46 @@ export default function ClubsPage() {
     verified?: boolean;
     reservationSystem?: ReservationSystem;
   }) => {
+    let params: {
+      page: number;
+      size: number;
+      sortBy: SortField;
+      sortDir: SortDirection;
+      name?: string;
+      department?: string;
+      verified?: boolean;
+      reservationSystem?: ReservationSystem;
+    } = {
+      page: config.page,
+      size: config.size,
+      sortBy: config.sortBy,
+      sortDir: config.sortDir,
+    };
+    params = addOptionalString(params, "name", config.name);
+    params = addOptionalString(params, "department", config.department);
+    params = addOptionalBool(params, "verified", config.verified);
+    params = addOptionalEnum(params, "reservationSystem", config.reservationSystem);
+    return params;
+  };
+
+  // Update URL with router.replace (no history entry)
+  const replaceUrl = (config: {
+    page: number;
+    size: number;
+    sortBy: SortField;
+    sortDir: SortDirection;
+    name?: string;
+    department?: string;
+    verified?: boolean;
+    reservationSystem?: ReservationSystem;
+  }) => {
+    const params = buildUrlParams(config);
     const queryString = buildUrlString(params);
     router.replace(`/admin/clubs${queryString}`, { scroll: false });
   };
 
   // Update URL with router.push (create history entry)
-  const pushUrl = (params: {
+  const pushUrl = (config: {
     page: number;
     size: number;
     sortBy: SortField;
@@ -241,6 +290,7 @@ export default function ClubsPage() {
     verified?: boolean;
     reservationSystem?: ReservationSystem;
   }) => {
+    const params = buildUrlParams(config);
     const queryString = buildUrlString(params);
     router.push(`/admin/clubs${queryString}`, { scroll: false });
   };
@@ -257,16 +307,18 @@ export default function ClubsPage() {
       ? undefined
       : verifiedInput === "true";
 
-    const nextParams = {
-      page: 0, // Reset to first page
-      size: pageSize,
-      sortBy,
-      sortDir,
-      name: nextName,
-      department: nextDepartment,
-      reservationSystem: nextReservationSystem,
-      verified: nextVerified,
-    };
+    // Build params with helpers
+    const base = { page: 0, size: pageSize, sortBy, sortDir };
+    let nextParams = base as typeof base & Partial<Pick<typeof base & {
+      name: string;
+      department: string;
+      reservationSystem: ReservationSystem;
+      verified: boolean;
+    }, "name" | "department" | "reservationSystem" | "verified">>;
+    if (nextName) nextParams = { ...nextParams, name: nextName };
+    if (nextDepartment) nextParams = { ...nextParams, department: nextDepartment };
+    if (nextReservationSystem) nextParams = { ...nextParams, reservationSystem: nextReservationSystem };
+    if (nextVerified !== undefined) nextParams = { ...nextParams, verified: nextVerified };
 
     // 1. Update URL with replace (no history pollution)
     replaceUrl(nextParams);
@@ -286,10 +338,6 @@ export default function ClubsPage() {
       size: pageSize,
       sortBy,
       sortDir,
-      name: undefined,
-      department: undefined,
-      reservationSystem: undefined,
-      verified: undefined,
     };
 
     // 1. Update URL with replace (clean URL)
@@ -317,16 +365,17 @@ export default function ClubsPage() {
       nextSortDir = sortDir === "asc" ? "desc" : "asc";
     }
 
-    const nextParams = {
-      page: 0, // Reset to first page
-      size: pageSize,
-      sortBy: nextSortBy,
-      sortDir: nextSortDir,
-      name: appliedName,
-      department: appliedDepartment,
-      reservationSystem: appliedReservationSystem,
-      verified: appliedVerified,
-    };
+    const base = { page: 0, size: pageSize, sortBy: nextSortBy, sortDir: nextSortDir };
+    let nextParams = base as typeof base & Partial<Pick<typeof base & {
+      name: string;
+      department: string;
+      reservationSystem: ReservationSystem;
+      verified: boolean;
+    }, "name" | "department" | "reservationSystem" | "verified">>;
+    if (appliedName) nextParams = { ...nextParams, name: appliedName };
+    if (appliedDepartment) nextParams = { ...nextParams, department: appliedDepartment };
+    if (appliedReservationSystem) nextParams = { ...nextParams, reservationSystem: appliedReservationSystem };
+    if (appliedVerified !== undefined) nextParams = { ...nextParams, verified: appliedVerified };
 
     // 1. Update URL with replace
     replaceUrl(nextParams);
@@ -341,16 +390,17 @@ export default function ClubsPage() {
   const handlePageSizeChange = (value: string) => {
     const nextSize = Number(value);
 
-    const nextParams = {
-      page: 0, // Reset to first page
-      size: nextSize,
-      sortBy,
-      sortDir,
-      name: appliedName,
-      department: appliedDepartment,
-      reservationSystem: appliedReservationSystem,
-      verified: appliedVerified,
-    };
+    const base = { page: 0, size: nextSize, sortBy, sortDir };
+    let nextParams = base as typeof base & Partial<Pick<typeof base & {
+      name: string;
+      department: string;
+      reservationSystem: ReservationSystem;
+      verified: boolean;
+    }, "name" | "department" | "reservationSystem" | "verified">>;
+    if (appliedName) nextParams = { ...nextParams, name: appliedName };
+    if (appliedDepartment) nextParams = { ...nextParams, department: appliedDepartment };
+    if (appliedReservationSystem) nextParams = { ...nextParams, reservationSystem: appliedReservationSystem };
+    if (appliedVerified !== undefined) nextParams = { ...nextParams, verified: appliedVerified };
 
     // 1. Update URL with replace (no need for history)
     replaceUrl(nextParams);
@@ -362,16 +412,17 @@ export default function ClubsPage() {
 
   // Handler: Change page (for pagination buttons)
   const handlePageChange = (newPage: number) => {
-    const nextParams = {
-      page: newPage,
-      size: pageSize,
-      sortBy,
-      sortDir,
-      name: appliedName,
-      department: appliedDepartment,
-      reservationSystem: appliedReservationSystem,
-      verified: appliedVerified,
-    };
+    const base = { page: newPage, size: pageSize, sortBy, sortDir };
+    let nextParams = base as typeof base & Partial<Pick<typeof base & {
+      name: string;
+      department: string;
+      reservationSystem: ReservationSystem;
+      verified: boolean;
+    }, "name" | "department" | "reservationSystem" | "verified">>;
+    if (appliedName) nextParams = { ...nextParams, name: appliedName };
+    if (appliedDepartment) nextParams = { ...nextParams, department: appliedDepartment };
+    if (appliedReservationSystem) nextParams = { ...nextParams, reservationSystem: appliedReservationSystem };
+    if (appliedVerified !== undefined) nextParams = { ...nextParams, verified: appliedVerified };
 
     // 1. Update URL with PUSH (create history entry for back/forward)
     pushUrl(nextParams);
@@ -464,6 +515,8 @@ export default function ClubsPage() {
                   <SelectItem value="GESTION_SPORTS">GestionSports</SelectItem>
                   <SelectItem value="DOIN_SPORT">DoinSport</SelectItem>
                   <SelectItem value="TENUP">TenUp</SelectItem>
+                  <SelectItem value="UNKNOWN">Inconnu</SelectItem>
+                  <SelectItem value="NOT_IMPLEMENTED">Non implémenté</SelectItem>
                 </SelectContent>
               </Select>
             </div>

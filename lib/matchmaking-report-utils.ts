@@ -1,3 +1,4 @@
+import { addOptionalString } from "@/lib/api-params-helpers";
 import type {
   MatchmakingReport,
   ReportViewModel,
@@ -439,15 +440,21 @@ function findBucketForMatch(
     }
   }
 
-  return {
+  let bucket: BucketDebugInfo = {
     bucketId: bucketDetail.bucketId ?? "unknown",
     club: bucketDetail.club ?? "Unknown",
     start: bucketDetail.start ?? "Unknown",
     anchor: bucketDetail.anchor ?? false,
     kept: bucketDetail.kept ?? false,
     reason: bucketDetail.reason ?? "Unknown",
-    reservedBy,
   };
+
+  // reservedBy est un objet complexe, on doit l'ajouter seulement s'il est défini
+  if (reservedBy !== undefined) {
+    bucket.reservedBy = reservedBy;
+  }
+
+  return bucket;
 }
 
 function findCandidatesForMatch(
@@ -490,7 +497,7 @@ function findCandidatesForMatch(
           detail.candidates?.forEach((candidate) => {
             // On ne peut pas faire de correspondance directe matchId <-> candidateId
             // donc on prend tous les candidats du bucket pour info
-            candidates.push({
+            let candidateDebug: CandidateDebugInfo = {
               candidateId: candidate.id ?? "unknown",
               team1: candidate.team1 ?? [],
               team2: candidate.team2 ?? [],
@@ -499,8 +506,9 @@ function findCandidatesForMatch(
               quality: candidate.quality ?? 0,
               score: candidate.score ?? 0,
               selected: candidate.selected ?? false,
-              rejectionReason: candidate.rejectionReason,
-            });
+            };
+            candidateDebug = addOptionalString(candidateDebug, "rejectionReason", candidate.rejectionReason);
+            candidates.push(candidateDebug);
           });
 
           // Extraire les checks depuis processingLog
