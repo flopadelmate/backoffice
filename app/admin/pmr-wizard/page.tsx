@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Wand2, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { Wand2, Info, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -26,6 +26,9 @@ import {
   type AnswerQ5,
 } from "@/lib/pmr-calculator";
 import { computePMR as computePMRBest } from "@/lib/pmr-calculator-best";
+import { usePmrSimulation } from "@/hooks/use-pmr-simulation";
+import { MatchComposition } from "@/components/pmr-wizard/match-composition";
+import { PostMatchResults } from "@/components/pmr-wizard/post-match-results";
 
 const NIVEAU_OPTIONS = [
   {
@@ -154,6 +157,20 @@ export default function PmrWizardPage() {
   } | null>(null);
   const [showDebugCurrent, setShowDebugCurrent] = useState(false);
   const [showDebugBest, setShowDebugBest] = useState(false);
+
+  // Hook pour la simulation Post-match
+  const {
+    players,
+    sets,
+    results,
+    isScoreValid,
+    updatePlayerPmr,
+    updatePlayerReliability,
+    updateSet,
+    simulate,
+    team1,
+    team2,
+  } = usePmrSimulation();
 
   const form = useForm<PmrOnboardingData>({
     resolver: zodResolver(pmrOnboardingSchema),
@@ -600,23 +617,47 @@ export default function PmrWizardPage() {
           </Card>
         </TabsContent>
 
-        {/* Post-match Tab (Placeholder) */}
+        {/* Post-match Tab */}
         <TabsContent value="post-match" className="space-y-6">
+          {/* Section 1 : Composition + Score + PMR */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Wand2 className="h-5 w-5" />
-                Calcul PMR Post-match
+                <TrendingUp className="h-5 w-5" />
+                Composition et score
               </CardTitle>
+              <CardDescription>
+                Modifiez les PMR (0.1–8.9) et fiabilité (0–100%) des joueurs, puis saisissez le score (sets 1+2 obligatoires, set 3 si égalité 1–1)
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">
-                  Cette fonctionnalité sera implémentée prochainement
-                </p>
-              </div>
+              <MatchComposition
+                team1={team1}
+                team2={team2}
+                sets={sets}
+                onUpdateSet={updateSet}
+                onUpdatePmr={updatePlayerPmr}
+                onUpdateReliability={updatePlayerReliability}
+                isScoreValid={isScoreValid}
+              />
             </CardContent>
           </Card>
+
+          {/* Section 2 : Bouton Simuler */}
+          <div>
+            <Button
+              onClick={simulate}
+              disabled={!isScoreValid}
+              size="lg"
+              className="w-full md:w-auto"
+            >
+              <Wand2 className="h-5 w-5 mr-2" />
+              Simuler l'évolution du PMR
+            </Button>
+          </div>
+
+          {/* Section 4 : Résultats (conditionnel) */}
+          {results && <PostMatchResults results={results} />}
         </TabsContent>
       </Tabs>
     </div>
