@@ -38,8 +38,7 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
   };
 
   const handleOpenMaps = () => {
-    const url = `https://www.google.com/maps?q=${draft.latitude},${draft.longitude}`;
-    window.open(url, "_blank", "noopener,noreferrer");
+    window.open(draft.googleMapsUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -178,7 +177,7 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
             </Button>
           )}
 
-          {draft.latitude && draft.longitude && (
+          {draft.googleMapsUrl && (
             <Button
               variant="outline"
               size="sm"

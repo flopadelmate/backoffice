@@ -19,6 +19,11 @@ import type {
   ClubBackofficeDetailDto,
   ClubBackofficeUpdateDto,
   GetClubsParams,
+  BlacklistResponseDto,
+  WhitelistResponseDto,
+  BlacklistCreateDto,
+  GetWhitelistParams,
+  GetBlacklistParams,
 } from "@/types/api";
 
 // Use relative path - Next.js will proxy to backend via rewrites
@@ -179,6 +184,103 @@ class ApiClient {
   ): Promise<ClubBackofficeDetailDto> {
     return this.request<ClubBackofficeDetailDto>(`/backoffice/clubs/${id}`, {
       method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteClub(
+    id: number,
+    blacklist?: boolean,
+    reason?: string
+  ): Promise<void> {
+    const params = new URLSearchParams();
+    if (blacklist) {
+      params.set("blacklist", "true");
+    }
+    if (reason) {
+      params.set("reason", reason);
+    }
+    const query = params.toString();
+    return this.request<void>(
+      `/backoffice/clubs/${id}${query ? `?${query}` : ""}`,
+      {
+        method: "DELETE",
+      }
+    );
+  }
+
+  async getBlacklistedClubs(
+    params?: GetBlacklistParams
+  ): Promise<SpringPage<BlacklistResponseDto>> {
+    const searchParams = new URLSearchParams();
+
+    if (params?.page != null) {
+      searchParams.set("page", params.page.toString());
+    }
+    if (params?.size != null) {
+      searchParams.set("size", params.size.toString());
+    }
+    if (params?.sortBy != null) {
+      searchParams.set("sortBy", params.sortBy);
+    }
+    if (params?.sortDir != null) {
+      searchParams.set("sortDir", params.sortDir);
+    }
+    if (params?.externalId != null) {
+      searchParams.set("externalId", params.externalId);
+    }
+    if (params?.source != null) {
+      searchParams.set("source", params.source);
+    }
+
+    const query = searchParams.toString();
+    return this.request<SpringPage<BlacklistResponseDto>>(
+      `/backoffice/blacklist${query ? `?${query}` : ""}`
+    );
+  }
+
+  async removeFromBlacklist(id: number): Promise<void> {
+    return this.request<void>(`/backoffice/blacklist/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getWhitelistedClubs(
+    params?: GetWhitelistParams
+  ): Promise<SpringPage<WhitelistResponseDto>> {
+    const searchParams = new URLSearchParams();
+
+    if (params?.page != null) {
+      searchParams.set("page", params.page.toString());
+    }
+    if (params?.size != null) {
+      searchParams.set("size", params.size.toString());
+    }
+    if (params?.sortBy != null) {
+      searchParams.set("sortBy", params.sortBy);
+    }
+    if (params?.sortDir != null) {
+      searchParams.set("sortDir", params.sortDir);
+    }
+    if (params?.externalId != null) {
+      searchParams.set("externalId", params.externalId);
+    }
+
+    const query = searchParams.toString();
+    return this.request<SpringPage<WhitelistResponseDto>>(
+      `/backoffice/whitelist${query ? `?${query}` : ""}`
+    );
+  }
+
+  async removeFromWhitelist(id: number): Promise<void> {
+    return this.request<void>(`/backoffice/whitelist/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async addToWhitelist(data: BlacklistCreateDto): Promise<void> {
+    return this.request<void>("/backoffice/whitelist", {
+      method: "POST",
       body: JSON.stringify(data),
     });
   }

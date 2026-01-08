@@ -6,6 +6,11 @@ import type {
   ClubBackofficeDetailDto,
   ClubBackofficeUpdateDto,
   GetClubsParams,
+  BlacklistResponseDto,
+  WhitelistResponseDto,
+  BlacklistCreateDto,
+  GetWhitelistParams,
+  GetBlacklistParams,
 } from "@/types/api";
 
 /**
@@ -58,6 +63,98 @@ export function useUpdateClub() {
       // Invalidate queries to refetch
       queryClient.invalidateQueries({ queryKey: ["clubs"] });
       queryClient.invalidateQueries({ queryKey: ["club", variables.id] });
+    },
+  });
+}
+
+/**
+ * Hook to delete a club
+ */
+export function useDeleteClub() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      blacklist,
+      reason,
+    }: {
+      id: number;
+      blacklist?: boolean;
+      reason?: string;
+    }) => {
+      return apiClient.deleteClub(id, blacklist, reason);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["clubs"] });
+    },
+  });
+}
+
+/**
+ * Hook to fetch blacklisted clubs (paginated)
+ * @param params - Query params (page, size, sortBy, sortDir, filters)
+ * @param enabled - Whether to enable the query (use to fetch only when tab is active)
+ */
+export function useBlacklistedClubs(params?: GetBlacklistParams, enabled: boolean = true) {
+  return useQuery<SpringPage<BlacklistResponseDto>>({
+    queryKey: ["blacklist", params],
+    queryFn: () => apiClient.getBlacklistedClubs(params),
+    enabled,
+  });
+}
+
+/**
+ * Hook to fetch whitelisted clubs (paginated)
+ * @param params - Query params (page, size, sortBy, sortDir, filters)
+ * @param enabled - Whether to enable the query (use to fetch only when tab is active)
+ */
+export function useWhitelistedClubs(params?: GetWhitelistParams, enabled: boolean = true) {
+  return useQuery<SpringPage<WhitelistResponseDto>>({
+    queryKey: ["whitelist", params],
+    queryFn: () => apiClient.getWhitelistedClubs(params),
+    enabled,
+  });
+}
+
+/**
+ * Hook to remove a club from blacklist
+ */
+export function useRemoveFromBlacklist() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => apiClient.removeFromBlacklist(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blacklist"] });
+    },
+  });
+}
+
+/**
+ * Hook to remove a club from whitelist
+ */
+export function useRemoveFromWhitelist() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => apiClient.removeFromWhitelist(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["whitelist"] });
+    },
+  });
+}
+
+/**
+ * Hook to add a club to whitelist
+ */
+export function useAddToWhitelist() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: BlacklistCreateDto) => apiClient.addToWhitelist(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["whitelist"] });
     },
   });
 }

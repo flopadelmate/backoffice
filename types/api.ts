@@ -56,6 +56,66 @@ export interface ApiError {
 // ============================================================================
 
 /**
+ * Source enum for Blacklist (from Swagger: MANUAL | SCRAPER)
+ */
+export type BlacklistSource = "MANUAL" | "SCRAPER";
+
+/**
+ * Blacklist entry (from GET /backoffice/blacklist)
+ */
+export interface BlacklistResponseDto {
+  id: number;
+  externalId: string;
+  source: BlacklistSource;
+  reason: string;
+  blacklistedAt: string; // ISO date-time
+}
+
+/**
+ * Whitelist entry (from GET /backoffice/whitelist)
+ * Note: No 'source' field according to Swagger
+ */
+export interface WhitelistResponseDto {
+  id: number;
+  externalId: string;
+  reason: string;
+  whitelistedAt: string; // ISO date-time
+}
+
+/**
+ * DTO for creating blacklist entries
+ * Used by POST /backoffice/blacklist
+ */
+export interface BlacklistCreateDto {
+  externalId: string;
+  source: BlacklistSource;
+  reason?: string;
+}
+
+/**
+ * Query parameters for GET /backoffice/whitelist (paginated)
+ */
+export interface GetWhitelistParams {
+  page?: number; // Default: 0
+  size?: number; // Default: 20
+  sortBy?: "whitelistedAt" | "externalId"; // Default: "whitelistedAt"
+  sortDir?: "asc" | "desc"; // Default: "desc"
+  externalId?: string; // Filter by Place ID
+}
+
+/**
+ * Query parameters for GET /backoffice/blacklist (paginated)
+ */
+export interface GetBlacklistParams {
+  page?: number; // Default: 0
+  size?: number; // Default: 20
+  sortBy?: "blacklistedAt" | "externalId"; // Default: "blacklistedAt"
+  sortDir?: "asc" | "desc"; // Default: "desc"
+  externalId?: string; // Filter by Place ID
+  source?: BlacklistSource; // Filter by source (MANUAL | SCRAPER)
+}
+
+/**
  * IMPORTANT: Système de réservation
  *
  * Le backend accepte et renvoie ces valeurs:
@@ -209,6 +269,7 @@ export interface ClubBackofficeDetailDto {
     openTime: string;
     closeTime: string;
   }>;
+  googleMapsUrl: string;
   favoriteCount: number;
   matchCount: number;
   reservationSystem?: ReservationSystem;

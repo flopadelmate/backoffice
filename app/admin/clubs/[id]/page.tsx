@@ -3,7 +3,8 @@
 import { useParams, useRouter } from "next/navigation";
 import { useClub, useUpdateClub } from "@/hooks/use-clubs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { ArrowLeft, Check, X, Trash2 } from "lucide-react";
+import { DeleteClubDialog } from "@/components/clubs/delete-club-dialog";
 import { ClubHeader } from "./club-header";
 import { ClubInfoContact } from "./club-info-contact";
 import { ClubExploitation } from "./club-exploitation";
@@ -30,6 +31,7 @@ export default function ClubDetailPage() {
   const [draft, setDraft] = useState<ClubBackofficeDetailDto | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [geoIsInvalid, setGeoIsInvalid] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Hydrate state when club data arrives (only if not dirty)
   const changes = useMemo(() => {
@@ -140,10 +142,21 @@ export default function ClubDetailPage() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Retour à la liste
         </Button>
-        <h1 className="text-3xl font-bold text-gray-900">{club.name}</h1>
-        <p className="text-gray-600 mt-1">
-          Gestion et modification des informations du club
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">{club.name}</h1>
+            <p className="text-gray-600 mt-1">
+              Gestion et modification des informations du club
+            </p>
+          </div>
+          <Button
+            variant="destructive"
+            onClick={() => setIsDeleteDialogOpen(true)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Supprimer le club
+          </Button>
+        </div>
       </div>
 
       {/* Sticky Save/Cancel buttons (only when dirty) */}
@@ -200,6 +213,14 @@ export default function ClubDetailPage() {
         draft={draft}
         onUpdate={updateDraft}
         inputClassName={EDITABLE_INPUT_CLASS}
+      />
+
+      <DeleteClubDialog
+        open={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        clubId={clubId}
+        clubName={club.name}
+        onSuccess={() => router.replace("/admin/clubs")}
       />
     </div>
   );
