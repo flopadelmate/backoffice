@@ -24,6 +24,8 @@ import type {
   BlacklistCreateDto,
   GetWhitelistParams,
   GetBlacklistParams,
+  ExternalIdAliasCreateDto,
+  ExternalIdAliasDto,
 } from "@/types/api";
 
 // Use relative path - Next.js will proxy to backend via rewrites
@@ -280,6 +282,15 @@ class ApiClient {
 
   async addToWhitelist(data: BlacklistCreateDto): Promise<void> {
     return this.request<void>("/backoffice/whitelist", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async createExternalIdAlias(
+    data: ExternalIdAliasCreateDto
+  ): Promise<ExternalIdAliasDto> {
+    return this.request<ExternalIdAliasDto>("/backoffice/external-id-aliases", {
       method: "POST",
       body: JSON.stringify(data),
     });

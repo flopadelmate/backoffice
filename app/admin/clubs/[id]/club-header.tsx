@@ -24,11 +24,18 @@ interface ClubHeaderProps {
 
 export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps) {
   const [copiedPublicId, setCopiedPublicId] = useState(false);
+  const [copiedPlaceId, setCopiedPlaceId] = useState(false);
 
   const handleCopyPublicId = async () => {
     await navigator.clipboard.writeText(draft.publicId);
     setCopiedPublicId(true);
     setTimeout(() => setCopiedPublicId(false), 2000);
+  };
+
+  const handleCopyPlaceId = async () => {
+    await navigator.clipboard.writeText(draft.externalId);
+    setCopiedPlaceId(true);
+    setTimeout(() => setCopiedPlaceId(false), 2000);
   };
 
   const handleOpenReservationUrl = () => {
@@ -117,7 +124,7 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
         </div>
 
         {/* KPIs - Read-only */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
             <Star className="h-5 w-5 text-yellow-500" />
             <div>
@@ -161,6 +168,13 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
               <p className="text-xs font-mono truncate">{draft.publicId}</p>
             </div>
           </div>
+
+          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+            <div className="flex-1">
+              <p className="text-xs text-gray-600">Place ID</p>
+              <p className="text-xs font-mono truncate">{draft.externalId}</p>
+            </div>
+          </div>
         </div>
 
         {/* Actions */}
@@ -197,6 +211,16 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
           >
             <Copy className="h-4 w-4" />
             {copiedPublicId ? "Copié !" : "Copier Public ID"}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCopyPlaceId}
+            className="gap-2"
+          >
+            <Copy className="h-4 w-4" />
+            {copiedPlaceId ? "Copié !" : "Copier Place ID"}
           </Button>
         </div>
       </CardContent>

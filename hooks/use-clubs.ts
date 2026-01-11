@@ -11,6 +11,8 @@ import type {
   BlacklistCreateDto,
   GetWhitelistParams,
   GetBlacklistParams,
+  ExternalIdAliasCreateDto,
+  ExternalIdAliasDto,
 } from "@/types/api";
 
 /**
@@ -155,6 +157,24 @@ export function useAddToWhitelist() {
     mutationFn: (data: BlacklistCreateDto) => apiClient.addToWhitelist(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["whitelist"] });
+    },
+  });
+}
+
+/**
+ * Hook to create an external ID alias (Place ID mapping)
+ */
+export function useCreateExternalIdAlias(clubId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation<ExternalIdAliasDto, Error, ExternalIdAliasCreateDto>({
+    mutationFn: (data: ExternalIdAliasCreateDto) =>
+      apiClient.createExternalIdAlias(data),
+    onSuccess: () => {
+      // Invalidate club detail query to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ["club", clubId] });
+      // Invalidate external ID aliases query (for future use)
+      queryClient.invalidateQueries({ queryKey: ["external-id-aliases"] });
     },
   });
 }

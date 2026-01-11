@@ -3,8 +3,9 @@
 import { useParams, useRouter } from "next/navigation";
 import { useClub, useUpdateClub } from "@/hooks/use-clubs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Check, X, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, X, Trash2, MapPin } from "lucide-react";
 import { DeleteClubDialog } from "@/components/clubs/delete-club-dialog";
+import { ModifyPlaceIdDialog } from "@/components/clubs/modify-place-id-dialog";
 import { ClubHeader } from "./club-header";
 import { ClubInfoContact } from "./club-info-contact";
 import { ClubExploitation } from "./club-exploitation";
@@ -32,6 +33,8 @@ export default function ClubDetailPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [geoIsInvalid, setGeoIsInvalid] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isModifyPlaceIdDialogOpen, setIsModifyPlaceIdDialogOpen] =
+    useState(false);
 
   // Hydrate state when club data arrives (only if not dirty)
   const changes = useMemo(() => {
@@ -149,13 +152,22 @@ export default function ClubDetailPage() {
               Gestion et modification des informations du club
             </p>
           </div>
-          <Button
-            variant="destructive"
-            onClick={() => setIsDeleteDialogOpen(true)}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Supprimer le club
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsModifyPlaceIdDialogOpen(true)}
+            >
+              <MapPin className="mr-2 h-4 w-4" />
+              Modifier le Place ID
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Supprimer le club
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -221,6 +233,12 @@ export default function ClubDetailPage() {
         clubId={clubId}
         clubName={club.name}
         onSuccess={() => router.replace("/admin/clubs")}
+      />
+
+      <ModifyPlaceIdDialog
+        open={isModifyPlaceIdDialogOpen}
+        onClose={() => setIsModifyPlaceIdDialogOpen(false)}
+        club={club}
       />
     </div>
   );

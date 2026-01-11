@@ -116,6 +116,27 @@ export interface GetBlacklistParams {
 }
 
 /**
+ * DTO for creating external ID aliases (Place ID mapping)
+ * Used by POST /backoffice/external-id-aliases
+ */
+export interface ExternalIdAliasCreateDto {
+  aliasExternalId: string; // Current/old Place ID
+  targetExternalId: string; // New Place ID to map to
+  reason?: string; // Optional reason for the alias
+}
+
+/**
+ * External ID alias entry (returned from POST /backoffice/external-id-aliases)
+ */
+export interface ExternalIdAliasDto {
+  id: number;
+  aliasExternalId: string;
+  targetExternalId: string;
+  reason: string;
+  createdAt: string; // ISO date-time
+}
+
+/**
  * IMPORTANT: Système de réservation
  *
  * Le backend accepte et renvoie ces valeurs:
@@ -250,6 +271,7 @@ export interface GetClubsParams {
 export interface ClubBackofficeDetailDto {
   id: number;
   publicId: string;
+  externalId: string; // Google Place ID
   name: string;
   phone: string;
   address: {
