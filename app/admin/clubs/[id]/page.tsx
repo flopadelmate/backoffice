@@ -14,7 +14,7 @@ import { ClubPhotosAdmin } from "./club-photos-admin";
 import type { ClubBackofficeDetailDto } from "@/types/api";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useMemo } from "react";
-import { computeChanges } from "./utils";
+import { computeChanges, hydrateDraftFromApi, type ClubDraft } from "./utils";
 import { cn } from "@/lib/utils";
 
 export default function ClubDetailPage() {
@@ -27,36 +27,40 @@ export default function ClubDetailPage() {
   const updateClub = useUpdateClub();
 
   // Global state
-  const [originalDraft, setOriginalDraft] =
-    useState<ClubBackofficeDetailDto | null>(null);
-  const [draft, setDraft] = useState<ClubBackofficeDetailDto | null>(null);
+  const [clubApi, setClubApi] = useState<ClubBackofficeDetailDto | null>(null);
+  const [originalDraft, setOriginalDraft] = useState<ClubDraft | null>(null);
+  const [draft, setDraft] = useState<ClubDraft | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [geoIsInvalid, setGeoIsInvalid] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isModifyPlaceIdDialogOpen, setIsModifyPlaceIdDialogOpen] =
     useState(false);
 
-  // Hydrate state when club data arrives (only if not dirty)
+  // Compute changes for isDirty detection
   const changes = useMemo(() => {
-    if (!originalDraft || !draft) return {};
-    return computeChanges(originalDraft, draft);
-  }, [originalDraft, draft]);
+    if (!clubApi || !draft) return {};
+    return computeChanges(clubApi, draft);
+  }, [clubApi, draft]);
 
   const isDirty = Object.keys(changes).length > 0;
 
+  // Hydrate state when club data arrives (only if id changed or not dirty)
   useEffect(() => {
-    if (club) {
-      if (!isDirty) {
-        setOriginalDraft(club);
-        setDraft(club);
-      }
+    if (!club) return;
+
+    // Guard: ne réhydrater que si pas de draft existant OU si club id a changé
+    if (!originalDraft || club.id !== originalDraft.id) {
+      setClubApi(club);
+      const hydrated = hydrateDraftFromApi(club);
+      setOriginalDraft(hydrated);
+      setDraft(hydrated);
     }
-  }, [club, isDirty]);
+  }, [club, originalDraft]);
 
   const canSave = isDirty && !geoIsInvalid && !isSaving;
 
   // Update draft function (passed to all sections)
-  const updateDraft = (updates: Partial<ClubBackofficeDetailDto>) => {
+  const updateDraft = (updates: Partial<ClubDraft>) => {
     setDraft((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
@@ -72,8 +76,10 @@ export default function ClubDetailPage() {
       });
 
       // Sync with backend response (lastAdminUpdateAt, etc.)
-      setOriginalDraft(updatedClub);
-      setDraft(updatedClub);
+      setClubApi(updatedClub);
+      const hydrated = hydrateDraftFromApi(updatedClub);
+      setOriginalDraft(hydrated);
+      setDraft(hydrated);
 
       toast({
         title: "Modifications enregistrées",
@@ -147,7 +153,7 @@ export default function ClubDetailPage() {
         </Button>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{club.name}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{draft.name}</h1>
             <p className="text-gray-600 mt-1">
               Gestion et modification des informations du club
             </p>
@@ -205,23 +211,26 @@ export default function ClubDetailPage() {
 
       {/* Sections */}
       <ClubHeader
+        clubApi={clubApi}
         draft={draft}
         onUpdate={updateDraft}
         inputClassName={EDITABLE_INPUT_CLASS}
       />
 
       <ClubInfoContact
+        clubApi={clubApi}
         draft={draft}
         onUpdate={updateDraft}
         inputClassName={EDITABLE_INPUT_CLASS}
         onGeoValidationChange={setGeoIsInvalid}
       />
 
-      <ClubExploitation draft={draft} />
+      <ClubExploitation draft={clubApi} />
 
-      <ClubCourts draft={draft} />
+      <ClubCourts draft={clubApi} />
 
       <ClubPhotosAdmin
+        clubApi={clubApi}
         draft={draft}
         onUpdate={updateDraft}
         inputClassName={EDITABLE_INPUT_CLASS}
@@ -231,14 +240,14 @@ export default function ClubDetailPage() {
         open={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         clubId={clubId}
-        clubName={club.name}
+        clubName={draft.name}
         onSuccess={() => router.replace("/admin/clubs")}
       />
 
       <ModifyPlaceIdDialog
         open={isModifyPlaceIdDialogOpen}
         onClose={() => setIsModifyPlaceIdDialogOpen(false)}
-        club={club}
+        club={clubApi!}
       />
     </div>
   );

@@ -5,10 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import type { ClubBackofficeDetailDto } from "@/types/api";
 
 interface ClubCourtsProps {
-  draft: ClubBackofficeDetailDto;
+  draft: ClubBackofficeDetailDto | null;
 }
 
 export function ClubCourts({ draft }: ClubCourtsProps) {
+  if (!draft) return null;
+
   return (
     <Card>
       <CardHeader>

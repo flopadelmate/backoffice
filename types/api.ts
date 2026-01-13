@@ -56,6 +56,27 @@ export interface ApiError {
 // ============================================================================
 
 /**
+ * Generic type for overridable values (scraped vs admin)
+ * Used by fields that can be overridden by admins in the back-office
+ */
+export interface OverridableValue<T> {
+  scraped: T | null;
+  admin: T | null;
+}
+
+export type OverridableString = OverridableValue<string>;
+
+export interface OverridableAddress {
+  scraped: { street: string; zipCode: string; city: string } | null;
+  admin: { street: string; zipCode: string; city: string } | null;
+}
+
+export interface OverridableGeo {
+  scraped: { latitude: number; longitude: number } | null;
+  admin: { latitude: number; longitude: number } | null;
+}
+
+/**
  * Source enum for Blacklist (from Swagger: MANUAL | SCRAPER)
  */
 export type BlacklistSource = "MANUAL" | "SCRAPER";
@@ -246,6 +267,7 @@ export interface ClubBackofficeListDto {
   department: string;
   verified: boolean;
   reservationSystem?: ReservationSystem;
+  hasTenupExternalId: boolean;
   favoriteCount: number;
   matchCount: number;
   lastAdminUpdateAt: string; // ISO datetime
@@ -272,16 +294,11 @@ export interface ClubBackofficeDetailDto {
   id: number;
   publicId: string;
   externalId: string; // Google Place ID
-  name: string;
-  phone: string;
-  address: {
-    street: string;
-    zipCode: string;
-    city: string;
-  };
-  websiteUrl: string;
-  latitude: number;
-  longitude: number;
+  name: OverridableString;
+  phone: OverridableString;
+  address: OverridableAddress;
+  websiteUrl: OverridableString;
+  geo: OverridableGeo;
   googleRating: number;
   googleReviewCount: number;
   photoUrls: string[];

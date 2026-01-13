@@ -5,11 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import type { ClubBackofficeDetailDto } from "@/types/api";
+import type { ClubDraft } from "./utils";
 import Image from "next/image";
 
 interface ClubPhotosAdminProps {
-  draft: ClubBackofficeDetailDto;
-  onUpdate: (updates: Partial<ClubBackofficeDetailDto>) => void;
+  clubApi: ClubBackofficeDetailDto | null;
+  draft: ClubDraft;
+  onUpdate: (updates: Partial<ClubDraft>) => void;
   inputClassName: string;
 }
 
@@ -26,10 +28,12 @@ function normalizePhotoUrl(url: string | null | undefined): string {
 }
 
 export function ClubPhotosAdmin({
+  clubApi,
   draft,
   onUpdate,
   inputClassName,
 }: ClubPhotosAdminProps) {
+  if (!clubApi) return null;
 
   return (
     <Card>
@@ -46,9 +50,9 @@ export function ClubPhotosAdmin({
             </span>
           </h3>
 
-          {draft.photoUrls && draft.photoUrls.length > 0 ? (
+          {clubApi.photoUrls && clubApi.photoUrls.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {draft.photoUrls.map((photoUrl, index) => (
+              {clubApi.photoUrls.map((photoUrl, index) => (
                 <div
                   key={index}
                   className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all cursor-pointer hover:border-blue-400 ${
@@ -99,27 +103,27 @@ export function ClubPhotosAdmin({
           <div className="grid gap-3 md:grid-cols-2 text-sm">
             <div>
               <Label className="text-xs text-gray-600">ID interne</Label>
-              <p className="font-mono">{draft.id}</p>
+              <p className="font-mono">{clubApi.id}</p>
             </div>
             <div>
               <Label className="text-xs text-gray-600">Public ID</Label>
-              <p className="font-mono text-xs">{draft.publicId}</p>
+              <p className="font-mono text-xs">{clubApi.publicId}</p>
             </div>
             <div>
               <Label className="text-xs text-gray-600">
                 Dernière mise à jour admin
               </Label>
               <p>
-                {draft.lastAdminUpdateAt
-                  ? new Date(draft.lastAdminUpdateAt).toLocaleString("fr-FR")
+                {clubApi.lastAdminUpdateAt
+                  ? new Date(clubApi.lastAdminUpdateAt).toLocaleString("fr-FR")
                   : "-"}
               </p>
             </div>
             <div>
               <Label className="text-xs text-gray-600">Dernier scraping</Label>
               <p>
-                {draft.lastScrapedAt
-                  ? new Date(draft.lastScrapedAt).toLocaleString("fr-FR")
+                {clubApi.lastScrapedAt
+                  ? new Date(clubApi.lastScrapedAt).toLocaleString("fr-FR")
                   : "-"}
               </p>
             </div>

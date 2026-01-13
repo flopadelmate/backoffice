@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -1078,7 +1079,16 @@ export default function ClubsPage() {
                         className="cursor-pointer hover:bg-gray-50 transition-colors"
                         onClick={() => router.push(`/admin/clubs/${club.id}`)}
                       >
-                        <TableCell className="font-medium">{club.name}</TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <span>{club.name}</span>
+                            {club.hasTenupExternalId && (
+                              <Badge variant="secondary" className="text-[10px] bg-gray-100 text-gray-600 hover:bg-gray-200">
+                                TenUp
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell>{club.city}</TableCell>
                         <TableCell>{club.department}</TableCell>
                         <TableCell>{formatReservationSystem(club.reservationSystem)}</TableCell>

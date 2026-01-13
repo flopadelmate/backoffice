@@ -14,26 +14,36 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { ClubBackofficeDetailDto, ReservationSystem } from "@/types/api";
+import type { ClubDraft } from "./utils";
+import { OverridableFieldWrapper } from "@/components/overridable-field-wrapper";
 import { useState } from "react";
 
 interface ClubHeaderProps {
-  draft: ClubBackofficeDetailDto;
-  onUpdate: (updates: Partial<ClubBackofficeDetailDto>) => void;
+  clubApi: ClubBackofficeDetailDto | null;
+  draft: ClubDraft;
+  onUpdate: (updates: Partial<ClubDraft>) => void;
   inputClassName: string;
 }
 
-export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps) {
+export function ClubHeader({
+  clubApi,
+  draft,
+  onUpdate,
+  inputClassName,
+}: ClubHeaderProps) {
   const [copiedPublicId, setCopiedPublicId] = useState(false);
   const [copiedPlaceId, setCopiedPlaceId] = useState(false);
 
   const handleCopyPublicId = async () => {
-    await navigator.clipboard.writeText(draft.publicId);
+    if (!clubApi) return;
+    await navigator.clipboard.writeText(clubApi.publicId);
     setCopiedPublicId(true);
     setTimeout(() => setCopiedPublicId(false), 2000);
   };
 
   const handleCopyPlaceId = async () => {
-    await navigator.clipboard.writeText(draft.externalId);
+    if (!clubApi) return;
+    await navigator.clipboard.writeText(clubApi.externalId);
     setCopiedPlaceId(true);
     setTimeout(() => setCopiedPlaceId(false), 2000);
   };
@@ -45,7 +55,8 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
   };
 
   const handleOpenMaps = () => {
-    window.open(draft.googleMapsUrl, "_blank", "noopener,noreferrer");
+    if (!clubApi) return;
+    window.open(clubApi.googleMapsUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -54,15 +65,29 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
         {/* Name + verified + reservationSystem */}
         <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            {/* Name - Input direct */}
+            {/* Name - With override indicator */}
             <div>
               <Label htmlFor="name">Nom du club</Label>
-              <Input
-                id="name"
-                value={draft.name}
-                onChange={(e) => onUpdate({ name: e.target.value })}
-                className={inputClassName}
-              />
+              {clubApi ? (
+                <OverridableFieldWrapper
+                  overridableValue={clubApi.name}
+                  fieldLabel="Nom du club"
+                >
+                  <Input
+                    id="name"
+                    value={draft.name}
+                    onChange={(e) => onUpdate({ name: e.target.value })}
+                    className={inputClassName}
+                  />
+                </OverridableFieldWrapper>
+              ) : (
+                <Input
+                  id="name"
+                  value={draft.name}
+                  onChange={(e) => onUpdate({ name: e.target.value })}
+                  className={inputClassName}
+                />
+              )}
             </div>
 
             {/* Verified - Switch always active */}
@@ -130,14 +155,15 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
             <div>
               <p className="text-xs text-gray-600">Note Google</p>
               <p className="text-sm font-semibold">
-                {draft.googleRating != null ? (
+                {clubApi?.googleRating != null ? (
                   <>
-                    {draft.googleRating.toFixed(1)}/5
-                    {draft.googleReviewCount != null && draft.googleReviewCount > 0 && (
-                      <span className="text-xs text-gray-500 ml-1">
-                        ({draft.googleReviewCount} avis)
-                      </span>
-                    )}
+                    {clubApi.googleRating.toFixed(1)}/5
+                    {clubApi.googleReviewCount != null &&
+                      clubApi.googleReviewCount > 0 && (
+                        <span className="text-xs text-gray-500 ml-1">
+                          ({clubApi.googleReviewCount} avis)
+                        </span>
+                      )}
                   </>
                 ) : (
                   <span className="text-gray-400 text-xs">Non renseigné</span>
@@ -150,7 +176,7 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
             <Heart className="h-5 w-5 text-red-500" />
             <div>
               <p className="text-xs text-gray-600">Favoris</p>
-              <p className="text-sm font-semibold">{draft.favoriteCount}</p>
+              <p className="text-sm font-semibold">{clubApi?.favoriteCount ?? 0}</p>
             </div>
           </div>
 
@@ -158,21 +184,25 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
             <Trophy className="h-5 w-5 text-blue-500" />
             <div>
               <p className="text-xs text-gray-600">Matchs créés</p>
-              <p className="text-sm font-semibold">{draft.matchCount}</p>
+              <p className="text-sm font-semibold">{clubApi?.matchCount ?? 0}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
             <div className="flex-1">
               <p className="text-xs text-gray-600">Public ID</p>
-              <p className="text-xs font-mono truncate">{draft.publicId}</p>
+              <p className="text-xs font-mono truncate">
+                {clubApi?.publicId ?? "-"}
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
             <div className="flex-1">
               <p className="text-xs text-gray-600">Place ID</p>
-              <p className="text-xs font-mono truncate">{draft.externalId}</p>
+              <p className="text-xs font-mono truncate">
+                {clubApi?.externalId ?? "-"}
+              </p>
             </div>
           </div>
         </div>
@@ -191,7 +221,7 @@ export function ClubHeader({ draft, onUpdate, inputClassName }: ClubHeaderProps)
             </Button>
           )}
 
-          {draft.googleMapsUrl && (
+          {clubApi?.googleMapsUrl && (
             <Button
               variant="outline"
               size="sm"
