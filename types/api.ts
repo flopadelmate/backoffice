@@ -312,7 +312,8 @@ export interface ClubBackofficeDetailDto {
   favoriteCount: number;
   matchCount: number;
   reservationSystem?: ReservationSystem;
-  reservationUrl: string;
+  frontendUrl: string;
+  backendUrl: string;
   courts: Array<{
     name: string;
     sportType: string;
@@ -340,7 +341,7 @@ export interface ClubBackofficeUpdateDto {
     longitude: number;
   };
   reservationSystem?: ReservationSystem;
-  reservationUrl?: string;
+  frontendUrl?: string;
   mainPhotoUrl?: string;
   verified?: boolean;
   notes?: string;

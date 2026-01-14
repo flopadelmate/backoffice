@@ -48,9 +48,15 @@ export function ClubHeader({
     setTimeout(() => setCopiedPlaceId(false), 2000);
   };
 
-  const handleOpenReservationUrl = () => {
-    if (draft.reservationUrl) {
-      window.open(draft.reservationUrl, "_blank", "noopener,noreferrer");
+  const handleOpenFrontendUrl = () => {
+    if (draft.frontendUrl) {
+      window.open(draft.frontendUrl, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  const handleOpenBackendUrl = () => {
+    if (clubApi?.backendUrl) {
+      window.open(clubApi.backendUrl, "_blank", "noopener,noreferrer");
     }
   };
 
@@ -107,22 +113,37 @@ export function ClubHeader({
             </div>
           </div>
 
-          {/* ReservationUrl + ReservationSystem */}
+          {/* FrontendUrl + BackendUrl */}
           <div className="grid gap-4 md:grid-cols-2">
-            {/* ReservationUrl - Input direct */}
+            {/* FrontendUrl - Editable */}
             <div>
-              <Label htmlFor="reservationUrl">URL de réservation</Label>
+              <Label htmlFor="frontendUrl">URL Frontend</Label>
               <Input
-                id="reservationUrl"
+                id="frontendUrl"
                 type="url"
-                value={draft.reservationUrl || ""}
-                onChange={(e) => onUpdate({ reservationUrl: e.target.value })}
+                value={draft.frontendUrl || ""}
+                onChange={(e) => onUpdate({ frontendUrl: e.target.value })}
                 className={inputClassName}
                 placeholder="https://..."
               />
             </div>
 
-            {/* ReservationSystem - Select always active with "UNKNOWN" = pas de système */}
+            {/* BackendUrl - Read-only */}
+            <div>
+              <Label htmlFor="backendUrl">URL Backend</Label>
+              <Input
+                id="backendUrl"
+                type="url"
+                value={clubApi?.backendUrl || ""}
+                readOnly
+                className="bg-gray-50"
+                placeholder="Non renseigné"
+              />
+            </div>
+          </div>
+
+          {/* ReservationSystem */}
+          <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Label htmlFor="reservationSystem">Système de réservation</Label>
               <Select
@@ -209,15 +230,27 @@ export function ClubHeader({
 
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
-          {draft.reservationUrl && (
+          {draft.frontendUrl && (
             <Button
               variant="outline"
               size="sm"
-              onClick={handleOpenReservationUrl}
+              onClick={handleOpenFrontendUrl}
               className="gap-2"
             >
               <ExternalLink className="h-4 w-4" />
-              Ouvrir réservation
+              Ouvrir Frontend
+            </Button>
+          )}
+
+          {clubApi?.backendUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleOpenBackendUrl}
+              className="gap-2"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Ouvrir Backend
             </Button>
           )}
 

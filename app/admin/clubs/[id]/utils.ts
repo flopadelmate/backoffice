@@ -21,7 +21,7 @@ export interface ClubDraft {
   longitude: number | null;
   verified: boolean;
   reservationSystem?: ReservationSystem | undefined;
-  reservationUrl: string;
+  frontendUrl: string;
   mainPhotoUrl: string;
   notes: string;
 }
@@ -50,7 +50,7 @@ export function hydrateDraftFromApi(
     longitude: effectiveGeo?.longitude ?? null,
     verified: club.verified,
     reservationSystem: club.reservationSystem,
-    reservationUrl: club.reservationUrl,
+    frontendUrl: club.frontendUrl,
     mainPhotoUrl: club.mainPhotoUrl,
     notes: club.notes,
   };
@@ -92,8 +92,8 @@ export function computeChanges(
       changes.reservationSystem = encodedSystem;
     }
   }
-  if (originalEffective.reservationUrl !== current.reservationUrl) {
-    changes.reservationUrl = current.reservationUrl;
+  if (originalEffective.frontendUrl !== current.frontendUrl) {
+    changes.frontendUrl = current.frontendUrl;
   }
   if (originalEffective.notes !== current.notes) {
     changes.notes = current.notes;
