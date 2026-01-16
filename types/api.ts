@@ -311,9 +311,6 @@ export interface ClubBackofficeDetailDto {
   googleMapsUrl: string;
   favoriteCount: number;
   matchCount: number;
-  reservationSystem?: ReservationSystem;
-  frontendUrl: string;
-  backendUrl: string;
   courts: Array<{
     name: string;
     sportType: string;
@@ -340,8 +337,6 @@ export interface ClubBackofficeUpdateDto {
     latitude: number;
     longitude: number;
   };
-  reservationSystem?: ReservationSystem;
-  frontendUrl?: string;
   mainPhotoUrl?: string;
   verified?: boolean;
   notes?: string;
@@ -1028,4 +1023,38 @@ export interface MatchDebugInfo {
   slotValidation: SlotValidationDebugInfo;
   processingLogs: ProcessingLog[];
   rejections: Rejection[];
+}
+
+// ============================================================================
+// Reservation System (nouveaux endpoints séparés)
+// ============================================================================
+
+export interface ReservationSystemDto {
+  systemType: "UNKNOWN" | "TENUP" | "GESTION_SPORTS" | "DOIN_SPORT" | "OPEN_RESA";
+  backendUrl: string | null;
+  frontendUrl: string | null;
+  email: string | null;
+  password: string | null;
+}
+
+// ============================================================================
+// External IDs (nouveaux endpoints séparés)
+// ============================================================================
+
+export interface ExternalIdDto {
+  id: number;
+  source: "GOOGLE" | "TENUP" | "DOIN_SPORT";
+  externalId: string;
+  isPrimary: boolean;
+}
+
+export type ExternalIdSource = "GOOGLE" | "TENUP" | "DOIN_SPORT";
+
+export interface CreateExternalIdDto {
+  source: ExternalIdSource;
+  externalId: string;
+}
+
+export interface UpdateExternalIdDto {
+  externalId: string;
 }

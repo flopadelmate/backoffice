@@ -26,6 +26,10 @@ import type {
   GetBlacklistParams,
   ExternalIdAliasCreateDto,
   ExternalIdAliasDto,
+  ReservationSystemDto,
+  ExternalIdDto,
+  CreateExternalIdDto,
+  UpdateExternalIdDto,
 } from "@/types/api";
 
 // Use relative path - Next.js will proxy to backend via rewrites
@@ -294,6 +298,66 @@ class ApiClient {
       method: "POST",
       body: JSON.stringify(data),
     });
+  }
+
+  // ============================================================================
+  // Reservation System
+  // ============================================================================
+
+  async getReservationSystem(clubId: number): Promise<ReservationSystemDto> {
+    return this.request<ReservationSystemDto>(
+      `/backoffice/clubs/${clubId}/reservation-system`
+    );
+  }
+
+  async updateReservationSystem(
+    clubId: number,
+    data: ReservationSystemDto
+  ): Promise<ReservationSystemDto> {
+    return this.request<ReservationSystemDto>(
+      `/backoffice/clubs/${clubId}/reservation-system`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  // ============================================================================
+  // External IDs
+  // ============================================================================
+
+  async getExternalIds(clubId: number): Promise<ExternalIdDto[]> {
+    return this.request<ExternalIdDto[]>(
+      `/backoffice/clubs/${clubId}/external-ids`
+    );
+  }
+
+  async createExternalId(
+    clubId: number,
+    data: CreateExternalIdDto
+  ): Promise<ExternalIdDto> {
+    return this.request<ExternalIdDto>(
+      `/backoffice/clubs/${clubId}/external-ids`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  async updateExternalId(
+    clubId: number,
+    externalIdId: number,
+    data: UpdateExternalIdDto
+  ): Promise<ExternalIdDto> {
+    return this.request<ExternalIdDto>(
+      `/backoffice/clubs/${clubId}/external-ids/${externalIdId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
   }
 
   // ============================================================================

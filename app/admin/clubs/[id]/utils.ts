@@ -1,10 +1,7 @@
 import type {
   ClubBackofficeDetailDto,
   ClubBackofficeUpdateDto,
-  ReservationSystem,
 } from "@/types/api";
-import { encodeReservationSystemForApi } from "@/types/api";
-import { addOptionalEnum } from "@/lib/api-params-helpers";
 import { getEffectiveValue } from "@/lib/overridable-value";
 
 /**
@@ -20,8 +17,6 @@ export interface ClubDraft {
   latitude: number | null;
   longitude: number | null;
   verified: boolean;
-  reservationSystem?: ReservationSystem | undefined;
-  frontendUrl: string;
   mainPhotoUrl: string;
   notes: string;
 }
@@ -49,8 +44,6 @@ export function hydrateDraftFromApi(
     latitude: effectiveGeo?.latitude ?? null,
     longitude: effectiveGeo?.longitude ?? null,
     verified: club.verified,
-    reservationSystem: club.reservationSystem,
-    frontendUrl: club.frontendUrl,
     mainPhotoUrl: club.mainPhotoUrl,
     notes: club.notes,
   };
@@ -82,18 +75,6 @@ export function computeChanges(
   }
   if (originalEffective.verified !== current.verified) {
     changes.verified = current.verified;
-  }
-  if (originalEffective.reservationSystem !== current.reservationSystem) {
-    // Encode pour envoi API: UNKNOWN/NOT_IMPLEMENTED → undefined (omis)
-    const encodedSystem = encodeReservationSystemForApi(
-      current.reservationSystem
-    );
-    if (encodedSystem !== undefined) {
-      changes.reservationSystem = encodedSystem;
-    }
-  }
-  if (originalEffective.frontendUrl !== current.frontendUrl) {
-    changes.frontendUrl = current.frontendUrl;
   }
   if (originalEffective.notes !== current.notes) {
     changes.notes = current.notes;

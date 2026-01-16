@@ -7,6 +7,8 @@ import { ArrowLeft, Check, X, Trash2, MapPin } from "lucide-react";
 import { DeleteClubDialog } from "@/components/clubs/delete-club-dialog";
 import { ModifyPlaceIdDialog } from "@/components/clubs/modify-place-id-dialog";
 import { ClubHeader } from "./club-header";
+import ClubReservationSystem from "./club-reservation-system";
+import ClubExternalIds from "./club-external-ids";
 import { ClubInfoContact } from "./club-info-contact";
 import { ClubExploitation } from "./club-exploitation";
 import { ClubCourts } from "./club-courts";
@@ -216,6 +218,10 @@ export default function ClubDetailPage() {
         onUpdate={updateDraft}
         inputClassName={EDITABLE_INPUT_CLASS}
       />
+
+      <ClubReservationSystem clubId={clubId} />
+
+      <ClubExternalIds clubId={clubId} />
 
       <ClubInfoContact
         clubApi={clubApi}

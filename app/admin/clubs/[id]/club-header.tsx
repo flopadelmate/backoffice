@@ -48,18 +48,6 @@ export function ClubHeader({
     setTimeout(() => setCopiedPlaceId(false), 2000);
   };
 
-  const handleOpenFrontendUrl = () => {
-    if (draft.frontendUrl) {
-      window.open(draft.frontendUrl, "_blank", "noopener,noreferrer");
-    }
-  };
-
-  const handleOpenBackendUrl = () => {
-    if (clubApi?.backendUrl) {
-      window.open(clubApi.backendUrl, "_blank", "noopener,noreferrer");
-    }
-  };
-
   const handleOpenMaps = () => {
     if (!clubApi) return;
     window.open(clubApi.googleMapsUrl, "_blank", "noopener,noreferrer");
@@ -68,7 +56,7 @@ export function ClubHeader({
   return (
     <Card>
       <CardContent className="p-6 space-y-6">
-        {/* Name + verified + reservationSystem */}
+        {/* Name + verified */}
         <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             {/* Name - With override indicator */}
@@ -110,61 +98,6 @@ export function ClubHeader({
                   {draft.verified ? "Oui" : "Non"}
                 </span>
               </div>
-            </div>
-          </div>
-
-          {/* FrontendUrl + BackendUrl */}
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* FrontendUrl - Editable */}
-            <div>
-              <Label htmlFor="frontendUrl">URL Frontend</Label>
-              <Input
-                id="frontendUrl"
-                type="url"
-                value={draft.frontendUrl || ""}
-                onChange={(e) => onUpdate({ frontendUrl: e.target.value })}
-                className={inputClassName}
-                placeholder="https://..."
-              />
-            </div>
-
-            {/* BackendUrl - Read-only */}
-            <div>
-              <Label htmlFor="backendUrl">URL Backend</Label>
-              <Input
-                id="backendUrl"
-                type="url"
-                value={clubApi?.backendUrl || ""}
-                readOnly
-                className="bg-gray-50"
-                placeholder="Non renseigné"
-              />
-            </div>
-          </div>
-
-          {/* ReservationSystem */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Label htmlFor="reservationSystem">Système de réservation</Label>
-              <Select
-                value={draft.reservationSystem ?? "UNKNOWN"}
-                onValueChange={(value) =>
-                  onUpdate({
-                    reservationSystem: value as ReservationSystem,
-                  })
-                }
-              >
-                <SelectTrigger id="reservationSystem" className={inputClassName}>
-                  <SelectValue placeholder="Inconnu" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="GESTION_SPORTS">Gestion Sports</SelectItem>
-                  <SelectItem value="DOIN_SPORT">Doin Sport</SelectItem>
-                  <SelectItem value="TENUP">TenUp</SelectItem>
-                  <SelectItem value="NOT_IMPLEMENTED">Non implémenté</SelectItem>
-                  <SelectItem value="UNKNOWN">Inconnu</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
         </div>
@@ -230,30 +163,6 @@ export function ClubHeader({
 
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
-          {draft.frontendUrl && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleOpenFrontendUrl}
-              className="gap-2"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Ouvrir Frontend
-            </Button>
-          )}
-
-          {clubApi?.backendUrl && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleOpenBackendUrl}
-              className="gap-2"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Ouvrir Backend
-            </Button>
-          )}
-
           {clubApi?.googleMapsUrl && (
             <Button
               variant="outline"

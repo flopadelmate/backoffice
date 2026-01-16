@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { toast } from "sonner";
+import { ApiError } from "@/lib/api-client";
 import type {
   SpringPage,
   ClubBackofficeListDto,
@@ -13,6 +15,10 @@ import type {
   GetBlacklistParams,
   ExternalIdAliasCreateDto,
   ExternalIdAliasDto,
+  ReservationSystemDto,
+  ExternalIdDto,
+  CreateExternalIdDto,
+  UpdateExternalIdDto,
 } from "@/types/api";
 
 /**
@@ -175,6 +181,95 @@ export function useCreateExternalIdAlias(clubId: number) {
       queryClient.invalidateQueries({ queryKey: ["club", clubId] });
       // Invalidate external ID aliases query (for future use)
       queryClient.invalidateQueries({ queryKey: ["external-id-aliases"] });
+    },
+  });
+}
+
+// ============================================================================
+// Reservation System
+// ============================================================================
+
+/**
+ * Hook to fetch reservation system for a club
+ */
+export function useReservationSystem(clubId: number) {
+  return useQuery({
+    queryKey: ["reservationSystem", clubId],
+    queryFn: () => apiClient.getReservationSystem(clubId),
+  });
+}
+
+/**
+ * Hook to update reservation system for a club
+ */
+export function useUpdateReservationSystem(clubId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ReservationSystemDto) =>
+      apiClient.updateReservationSystem(clubId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reservationSystem", clubId] });
+      toast.success("Système de réservation mis à jour");
+    },
+    onError: (error: ApiError) => {
+      toast.error(error.message || "Erreur lors de la mise à jour");
+    },
+  });
+}
+
+// ============================================================================
+// External IDs
+// ============================================================================
+
+/**
+ * Hook to fetch external IDs for a club
+ */
+export function useExternalIds(clubId: number) {
+  return useQuery({
+    queryKey: ["externalIds", clubId],
+    queryFn: () => apiClient.getExternalIds(clubId),
+  });
+}
+
+/**
+ * Hook to create a new external ID for a club
+ */
+export function useCreateExternalId(clubId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateExternalIdDto) =>
+      apiClient.createExternalId(clubId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["externalIds", clubId] });
+      toast.success("ID externe ajouté");
+    },
+    onError: (error: ApiError) => {
+      if (error.status === 400) {
+        toast.error("Cette combinaison source/ID existe déjà");
+      } else {
+        toast.error(error.message || "Erreur lors de l'ajout");
+      }
+    },
+  });
+}
+
+/**
+ * Hook to update an external ID for a club
+ */
+export function useUpdateExternalId(clubId: number, externalIdId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: UpdateExternalIdDto) =>
+      apiClient.updateExternalId(clubId, externalIdId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["externalIds", clubId] });
+      toast.success("ID externe mis à jour");
+    },
+    onError: (error: ApiError) => {
+      toast.error(error.message || "Erreur lors de la modification");
     },
   });
 }
