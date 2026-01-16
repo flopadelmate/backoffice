@@ -16,6 +16,7 @@ import type {
   ExternalIdAliasCreateDto,
   ExternalIdAliasDto,
   ReservationSystemDto,
+  ReservationSystemUpdateDto,
   ExternalIdDto,
   CreateExternalIdDto,
   UpdateExternalIdDto,
@@ -206,7 +207,7 @@ export function useUpdateReservationSystem(clubId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: ReservationSystemDto) =>
+    mutationFn: (data: ReservationSystemUpdateDto) =>
       apiClient.updateReservationSystem(clubId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reservationSystem", clubId] });

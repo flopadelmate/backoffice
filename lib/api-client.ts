@@ -27,6 +27,7 @@ import type {
   ExternalIdAliasCreateDto,
   ExternalIdAliasDto,
   ReservationSystemDto,
+  ReservationSystemUpdateDto,
   ExternalIdDto,
   CreateExternalIdDto,
   UpdateExternalIdDto,
@@ -312,7 +313,7 @@ class ApiClient {
 
   async updateReservationSystem(
     clubId: number,
-    data: ReservationSystemDto
+    data: ReservationSystemUpdateDto
   ): Promise<ReservationSystemDto> {
     return this.request<ReservationSystemDto>(
       `/backoffice/clubs/${clubId}/reservation-system`,

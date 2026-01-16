@@ -32,13 +32,34 @@ import {
   reservationSystemSchema,
   type ReservationSystemFormData,
 } from "@/lib/schemas/reservation-system";
-import type { ReservationSystemDto } from "@/types/api";
+import type { ReservationSystemDto, ReservationSystemUpdateDto } from "@/types/api";
 
 interface EditReservationSystemDialogProps {
   clubId: number;
   reservationSystem: ReservationSystemDto;
   open: boolean;
   onClose: () => void;
+}
+
+type SystemType = ReservationSystemDto["systemType"];
+type EditableField = "frontendUrl" | "clubId" | "email" | "password";
+
+// Détermine si un champ est éditable selon le systemType
+function isFieldEditable(systemType: SystemType, field: EditableField): boolean {
+  if (systemType === "UNKNOWN" || systemType === "NOT_IMPLEMENTED") {
+    return false;
+  }
+
+  const editableFieldsByType: Record<SystemType, EditableField[]> = {
+    UNKNOWN: [],
+    NOT_IMPLEMENTED: [],
+    TENUP: ["clubId"],
+    GESTION_SPORTS: ["frontendUrl", "clubId", "email", "password"],
+    DOIN_SPORT: ["frontendUrl", "clubId"],
+    OPEN_RESA: ["frontendUrl", "email", "password"],
+  };
+
+  return editableFieldsByType[systemType].includes(field);
 }
 
 export default function EditReservationSystemDialog({
@@ -68,23 +89,22 @@ export default function EditReservationSystemDialog({
       return value;
     };
 
-    // Si systemType === "UNKNOWN", forcer autres champs à null
-    const payload: ReservationSystemDto =
-      data.systemType === "UNKNOWN"
-        ? {
-            systemType: "UNKNOWN",
-            backendUrl: null,
-            frontendUrl: null,
-            email: null,
-            password: null,
-          }
-        : {
-            systemType: data.systemType,
-            backendUrl: normalizeEmptyToNull(data.backendUrl),
-            frontendUrl: normalizeEmptyToNull(data.frontendUrl),
-            email: normalizeEmptyToNull(data.email),
-            password: normalizeEmptyToNull(data.password),
-          };
+    // Construire le payload en mergant avec les valeurs existantes pour les champs readOnly
+    const payload: ReservationSystemUpdateDto = {
+      systemType: data.systemType,
+      frontendUrl: isFieldEditable(data.systemType, "frontendUrl")
+        ? normalizeEmptyToNull(data.frontendUrl)
+        : reservationSystem.frontendUrl,
+      clubId: isFieldEditable(data.systemType, "clubId")
+        ? normalizeEmptyToNull(data.clubId)
+        : reservationSystem.clubId,
+      email: isFieldEditable(data.systemType, "email")
+        ? normalizeEmptyToNull(data.email)
+        : reservationSystem.email,
+      password: isFieldEditable(data.systemType, "password")
+        ? normalizeEmptyToNull(data.password)
+        : reservationSystem.password,
+    };
 
     updateMutation.mutate(payload, {
       onSuccess: () => {
@@ -98,6 +118,8 @@ export default function EditReservationSystemDialog({
     form.reset();
     onClose();
   };
+
+  const showOtherFields = systemType !== "UNKNOWN" && systemType !== "NOT_IMPLEMENTED";
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
@@ -122,6 +144,7 @@ export default function EditReservationSystemDialog({
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="UNKNOWN">UNKNOWN</SelectItem>
+                      <SelectItem value="NOT_IMPLEMENTED">NOT_IMPLEMENTED</SelectItem>
                       <SelectItem value="TENUP">TENUP</SelectItem>
                       <SelectItem value="GESTION_SPORTS">
                         GESTION_SPORTS
@@ -135,16 +158,16 @@ export default function EditReservationSystemDialog({
               )}
             />
 
-            {systemType !== "UNKNOWN" && (
+            {showOtherFields && (
               <>
                 <FormField
                   control={form.control}
                   name="backendUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>URL Backend</FormLabel>
+                      <FormLabel>URL Backend (lecture seule)</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ""} />
+                        <Input {...field} value={field.value || ""} readOnly className="bg-muted" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -154,51 +177,103 @@ export default function EditReservationSystemDialog({
                 <FormField
                   control={form.control}
                   name="frontendUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL Frontend</FormLabel>
-                      <FormControl>
-                        <Input {...field} value={field.value || ""} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const editable = isFieldEditable(systemType, "frontendUrl");
+                    return (
+                      <FormItem>
+                        <FormLabel>
+                          URL Frontend
+                          {editable && <span className="text-destructive ml-1">*</span>}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            readOnly={!editable}
+                            className={!editable ? "bg-muted" : ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="clubId"
+                  render={({ field }) => {
+                    const editable = isFieldEditable(systemType, "clubId");
+                    return (
+                      <FormItem>
+                        <FormLabel>
+                          ID Club
+                          {editable && <span className="text-destructive ml-1">*</span>}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            readOnly={!editable}
+                            className={!editable ? "bg-muted" : ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField
                   control={form.control}
                   name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const editable = isFieldEditable(systemType, "email");
+                    return (
+                      <FormItem>
+                        <FormLabel>
+                          Email
+                          {editable && <span className="text-destructive ml-1">*</span>}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            {...field}
+                            value={field.value || ""}
+                            readOnly={!editable}
+                            className={!editable ? "bg-muted" : ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField
                   control={form.control}
                   name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Mot de passe</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          {...field}
-                          value={field.value || ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const editable = isFieldEditable(systemType, "password");
+                    return (
+                      <FormItem>
+                        <FormLabel>
+                          Mot de passe
+                          {editable && <span className="text-destructive ml-1">*</span>}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            {...field}
+                            value={field.value || ""}
+                            readOnly={!editable}
+                            className={!editable ? "bg-muted" : ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
               </>
             )}

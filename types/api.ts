@@ -1030,9 +1030,18 @@ export interface MatchDebugInfo {
 // ============================================================================
 
 export interface ReservationSystemDto {
-  systemType: "UNKNOWN" | "TENUP" | "GESTION_SPORTS" | "DOIN_SPORT" | "OPEN_RESA";
+  systemType: "UNKNOWN" | "NOT_IMPLEMENTED" | "TENUP" | "GESTION_SPORTS" | "DOIN_SPORT" | "OPEN_RESA";
   backendUrl: string | null;
   frontendUrl: string | null;
+  clubId: string | null;
+  email: string | null;
+  password: string | null;
+}
+
+export interface ReservationSystemUpdateDto {
+  systemType: "UNKNOWN" | "NOT_IMPLEMENTED" | "TENUP" | "GESTION_SPORTS" | "DOIN_SPORT" | "OPEN_RESA";
+  frontendUrl: string | null;
+  clubId: string | null;
   email: string | null;
   password: string | null;
 }

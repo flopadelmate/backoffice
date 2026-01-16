@@ -31,9 +31,10 @@ export default function ClubReservationSystem({
 
   // Toujours afficher la carte, même si pas de données (sinon impossible d'éditer quand c'est vide)
   const data = reservationSystem || {
-    systemType: "UNKNOWN",
+    systemType: "UNKNOWN" as const,
     backendUrl: null,
     frontendUrl: null,
+    clubId: null,
     email: null,
     password: null,
   };
@@ -69,6 +70,12 @@ export default function ClubReservationSystem({
               <Label>URL Frontend</Label>
               <div className="text-sm text-muted-foreground">
                 {data.frontendUrl || "Non renseigné"}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>ID Club</Label>
+              <div className="text-sm text-muted-foreground">
+                {data.clubId || "Non renseigné"}
               </div>
             </div>
             <div className="space-y-2">
