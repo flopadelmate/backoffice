@@ -177,6 +177,7 @@ export type ReservationSystemApi =
   | "GESTION_SPORTS"
   | "DOIN_SPORT"
   | "TENUP"
+  | "OPEN_RESA"
   | "UNKNOWN"
   | "NOT_IMPLEMENTED";
 

@@ -68,6 +68,7 @@ function formatReservationSystem(system: string | undefined): string {
     GESTION_SPORTS: "GestionSports",
     DOIN_SPORT: "DoinSport",
     TENUP: "TenUp",
+    OPEN_RESA: "OpenResa",
     UNKNOWN: "Inconnu",
     NOT_IMPLEMENTED: "Non implémenté",
   };
@@ -947,6 +948,7 @@ export default function ClubsPage() {
                   <SelectItem value="GESTION_SPORTS">GestionSports</SelectItem>
                   <SelectItem value="DOIN_SPORT">DoinSport</SelectItem>
                   <SelectItem value="TENUP">TenUp</SelectItem>
+                  <SelectItem value="OPEN_RESA">OpenResa</SelectItem>
                   <SelectItem value="UNKNOWN">Inconnu</SelectItem>
                   <SelectItem value="NOT_IMPLEMENTED">Non implémenté</SelectItem>
                 </SelectContent>
